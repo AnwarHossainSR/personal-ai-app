@@ -1,3 +1,5 @@
+// app/(modules)/admin/page.tsx - Server Component
+import { ChartSection } from "@/components/chart-section";
 import {
   Card,
   CardContent,
@@ -5,23 +7,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChartWrapper } from "@/components/ui/chart-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
 import { ModuleManagementService } from "@/modules/admin/services/module-management-service";
 import { UserManagementService } from "@/modules/admin/services/user-management-service";
 import { Activity, Settings, Shield, Users } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 export default async function AdminDashboard() {
   const [userStats, moduleStats, auditLogs] = await Promise.all([
@@ -101,50 +90,11 @@ export default async function AdminDashboard() {
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <ChartWrapper
-          title="User Distribution"
-          description="Breakdown of user types and status"
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={userDistributionData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent = 0 }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
-                }
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {userDistributionData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
-
-        <ChartWrapper
-          title="Module Usage"
-          description="Active users per module"
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={moduleUsageData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="users" fill="hsl(var(--chart-1))" />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartWrapper>
-      </div>
+      {/* Charts - Move to Client Component */}
+      <ChartSection
+        userDistributionData={userDistributionData}
+        moduleUsageData={moduleUsageData}
+      />
 
       {/* Recent Activity */}
       <div className="grid gap-4 md:grid-cols-2">

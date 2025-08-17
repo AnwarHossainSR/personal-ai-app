@@ -36,12 +36,12 @@ import {
   UserCog,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import {
-  blockUserAction,
-  unblockUserAction,
-  updateUserRoleAction,
-} from "../actions/user-actions";
+  blockUserClientAction,
+  unblockUserClientAction,
+  updateUserRoleClientAction,
+} from "../actions/client-actions";
 
 interface UserActionsProps {
   user: IUser;
@@ -54,8 +54,8 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
   const [isUnblockDialogOpen, setIsUnblockDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<"user" | "admin">(user.role);
   const [reason, setReason] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const isCurrentUser = user._id.toString() === currentUserId;
@@ -67,15 +67,13 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
   };
 
   const handleRoleChange = async () => {
-    setIsLoading(true);
-    setError(null);
+    const formData = new FormData();
+    formData.append("userId", user._id.toString());
+    formData.append("role", selectedRole);
+    formData.append("reason", reason);
 
-    try {
-      const result = await updateUserRoleAction({
-        userId: user._id.toString(),
-        role: selectedRole,
-        reason,
-      });
+    startTransition(async () => {
+      const result = await updateUserRoleClientAction(formData);
 
       if (result.success) {
         setIsRoleDialogOpen(false);
@@ -84,23 +82,16 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
       } else {
         setError(result.error || "Failed to update user role");
       }
-    } catch (error) {
-      console.error("Failed to update role:", error);
-      setError("An unexpected error occurred while updating the user role");
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleBlock = async () => {
-    setIsLoading(true);
-    setError(null);
+    const formData = new FormData();
+    formData.append("userId", user._id.toString());
+    formData.append("reason", reason);
 
-    try {
-      const result = await blockUserAction({
-        userId: user._id.toString(),
-        reason,
-      });
+    startTransition(async () => {
+      const result = await blockUserClientAction(formData);
 
       if (result.success) {
         setIsBlockDialogOpen(false);
@@ -109,23 +100,16 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
       } else {
         setError(result.error || "Failed to block user");
       }
-    } catch (error) {
-      console.error("Failed to block user:", error);
-      setError("An unexpected error occurred while blocking the user");
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleUnblock = async () => {
-    setIsLoading(true);
-    setError(null);
+    const formData = new FormData();
+    formData.append("userId", user._id.toString());
+    formData.append("reason", reason);
 
-    try {
-      const result = await unblockUserAction({
-        userId: user._id.toString(),
-        reason,
-      });
+    startTransition(async () => {
+      const result = await unblockUserClientAction(formData);
 
       if (result.success) {
         setIsUnblockDialogOpen(false);
@@ -134,16 +118,11 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
       } else {
         setError(result.error || "Failed to unblock user");
       }
-    } catch (error) {
-      console.error("Failed to unblock user:", error);
-      setError("An unexpected error occurred while unblocking the user");
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleDialogClose = (dialogType: "role" | "block" | "unblock") => {
-    if (isLoading) return; // Prevent closing while loading
+    if (isPending) return; // Prevent closing while loading
 
     resetDialog();
 
@@ -224,7 +203,7 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 onValueChange={(value: "user" | "admin") =>
                   setSelectedRole(value)
                 }
-                disabled={isLoading}
+                disabled={isPending}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -242,7 +221,7 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for role change..."
-                disabled={isLoading}
+                disabled={isPending}
               />
             </div>
           </div>
@@ -250,12 +229,12 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
             <Button
               variant="outline"
               onClick={() => handleDialogClose("role")}
-              disabled={isLoading}
+              disabled={isPending}
             >
               Cancel
             </Button>
-            <Button onClick={handleRoleChange} disabled={isLoading}>
-              {isLoading ? "Updating..." : "Update Role"}
+            <Button onClick={handleRoleChange} disabled={isPending}>
+              {isPending ? "Updating..." : "Update Role"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -290,7 +269,7 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for blocking this user..."
                 required
-                disabled={isLoading}
+                disabled={isPending}
               />
             </div>
           </div>
@@ -298,16 +277,16 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
             <Button
               variant="outline"
               onClick={() => handleDialogClose("block")}
-              disabled={isLoading}
+              disabled={isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleBlock}
-              disabled={isLoading || !reason.trim()}
+              disabled={isPending || !reason.trim()}
             >
-              {isLoading ? "Blocking..." : "Block User"}
+              {isPending ? "Blocking..." : "Block User"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -341,7 +320,7 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for unblocking this user..."
-                disabled={isLoading}
+                disabled={isPending}
               />
             </div>
           </div>
@@ -349,12 +328,12 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
             <Button
               variant="outline"
               onClick={() => handleDialogClose("unblock")}
-              disabled={isLoading}
+              disabled={isPending}
             >
               Cancel
             </Button>
-            <Button onClick={handleUnblock} disabled={isLoading}>
-              {isLoading ? "Unblocking..." : "Unblock User"}
+            <Button onClick={handleUnblock} disabled={isPending}>
+              {isPending ? "Unblocking..." : "Unblock User"}
             </Button>
           </DialogFooter>
         </DialogContent>
