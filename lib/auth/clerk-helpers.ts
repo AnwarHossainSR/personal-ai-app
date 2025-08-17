@@ -1,10 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-
-export interface ClerkUser {
-  userId: string;
-  email: string;
-  role: "user" | "system_administrator";
-}
+import { ClerkUser } from "./types";
 
 export async function getAuthUser(): Promise<ClerkUser | null> {
   try {
