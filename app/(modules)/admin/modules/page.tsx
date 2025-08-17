@@ -14,7 +14,7 @@ import { redirect } from "next/navigation";
 
 export default async function ModulesManagementPage() {
   const user = await getAuthUser();
-  if (!user || user.role !== "admin") {
+  if (!user || user.role !== "system_administrator") {
     redirect("/dashboard");
   }
 

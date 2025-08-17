@@ -1,71 +1,78 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, ChevronRight, Menu, X, BarChart3 } from "lucide-react"
-import { getModulesForRole } from "@/modules/registry"
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { getModulesForRole } from "@/modules/registry";
+import { BarChart3, ChevronDown, ChevronRight, Menu, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 interface SidebarProps {
-  userRole: "user" | "admin"
-  className?: string
+  userRole: "user" | "system_administrator";
+  className?: string;
 }
 
 interface SidebarState {
-  [moduleId: string]: boolean
+  [moduleId: string]: boolean;
 }
 
 export function Sidebar({ userRole, className }: SidebarProps) {
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
-  const [moduleStates, setModuleStates] = useState<SidebarState>({})
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [moduleStates, setModuleStates] = useState<SidebarState>({});
 
-  const modules = useMemo(() => getModulesForRole(userRole), [userRole])
+  const modules = useMemo(() => getModulesForRole(userRole), [userRole]);
 
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-module-states")
+    const saved = localStorage.getItem("sidebar-module-states");
     if (saved) {
       try {
-        setModuleStates(JSON.parse(saved))
+        setModuleStates(JSON.parse(saved));
       } catch (error) {
-        console.error("Failed to parse sidebar states:", error)
+        console.error("Failed to parse sidebar states:", error);
         // Set default states on error
-        const defaultStates: SidebarState = {}
+        const defaultStates: SidebarState = {};
         modules.forEach((module) => {
-          defaultStates[module.id] = true
-        })
-        setModuleStates(defaultStates)
+          defaultStates[module.id] = true;
+        });
+        setModuleStates(defaultStates);
       }
     } else {
       // Default to expanded for all modules
-      const defaultStates: SidebarState = {}
+      const defaultStates: SidebarState = {};
       modules.forEach((module) => {
-        defaultStates[module.id] = true
-      })
-      setModuleStates(defaultStates)
+        defaultStates[module.id] = true;
+      });
+      setModuleStates(defaultStates);
     }
-  }, []) // Empty dependency array to run only once
+  }, []); // Empty dependency array to run only once
 
   useEffect(() => {
     if (Object.keys(moduleStates).length > 0) {
-      localStorage.setItem("sidebar-module-states", JSON.stringify(moduleStates))
+      localStorage.setItem(
+        "sidebar-module-states",
+        JSON.stringify(moduleStates)
+      );
     }
-  }, [moduleStates])
+  }, [moduleStates]);
 
   const toggleModule = (moduleId: string) => {
     setModuleStates((prev) => ({
       ...prev,
       [moduleId]: !prev[moduleId],
-    }))
-  }
+    }));
+  };
 
   const isRouteActive = (path: string) => {
-    return pathname === path || pathname.startsWith(path + "/")
-  }
+    return pathname === path || pathname.startsWith(path + "/");
+  };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-sidebar">
@@ -95,7 +102,7 @@ export function Sidebar({ userRole, className }: SidebarProps) {
               "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
               isRouteActive("/dashboard")
                 ? "bg-primary text-primary-foreground shadow-lg"
-                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             )}
           >
             <BarChart3 className="h-5 w-5" />
@@ -104,7 +111,9 @@ export function Sidebar({ userRole, className }: SidebarProps) {
 
           {/* Module Navigation */}
           <div className="space-y-1 mt-6">
-            <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Modules</p>
+            <p className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Modules
+            </p>
             {modules.map((module) => (
               <Collapsible
                 key={module.id}
@@ -129,7 +138,10 @@ export function Sidebar({ userRole, className }: SidebarProps) {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-1 mt-1">
                   {module.routes
-                    .filter((route) => !route.requireRole || route.requireRole === userRole)
+                    .filter(
+                      (route) =>
+                        !route.requireRole || route.requireRole === userRole
+                    )
                     .map((route) => (
                       <Link
                         key={route.path}
@@ -138,7 +150,7 @@ export function Sidebar({ userRole, className }: SidebarProps) {
                           "flex items-center gap-3 px-8 py-2 rounded-lg text-sm transition-all duration-200 ml-4",
                           isRouteActive(route.path)
                             ? "bg-primary/10 text-primary border-l-2 border-primary"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                         )}
                       >
                         {route.icon && <route.icon className="h-4 w-4" />}
@@ -159,7 +171,7 @@ export function Sidebar({ userRole, className }: SidebarProps) {
         </div>
       </div>
     </div>
-  )
+  );
 
   return (
     <>
@@ -174,18 +186,21 @@ export function Sidebar({ userRole, className }: SidebarProps) {
 
       {/* Mobile Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm" onClick={() => setIsOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+          onClick={() => setIsOpen(false)}
+        />
       )}
 
       <aside
         className={cn(
           "fixed left-0 top-0 z-40 h-full w-72 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto shadow-xl lg:shadow-none",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          className,
+          className
         )}
       >
         <SidebarContent />
       </aside>
     </>
-  )
+  );
 }

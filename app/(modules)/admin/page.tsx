@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/card";
 import { ChartWrapper } from "@/components/ui/chart-wrapper";
 import { StatCard } from "@/components/ui/stat-card";
-import { getAuthUser } from "@/lib/auth/clerk-helpers";
 import { ModuleManagementService } from "@/modules/admin/services/module-management-service";
 import { UserManagementService } from "@/modules/admin/services/user-management-service";
 import { Activity, Settings, Shield, Users } from "lucide-react";
@@ -25,8 +24,6 @@ import {
 } from "recharts";
 
 export default async function AdminDashboard() {
-  const user = await getAuthUser();
-
   const [userStats, moduleStats, auditLogs] = await Promise.all([
     UserManagementService.getUserStats(),
     ModuleManagementService.getModuleUsageStats(),
