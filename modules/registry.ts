@@ -1,22 +1,31 @@
-import { type LucideIcon, Car, Fuel, Wrench, BarChart3, Settings, Users, Shield } from "lucide-react"
+import {
+  type LucideIcon,
+  BarChart3,
+  Car,
+  Fuel,
+  Settings,
+  Shield,
+  Users,
+  Wrench,
+} from "lucide-react";
 
 export interface ModuleRoute {
-  path: string
-  label: string
-  icon?: LucideIcon
-  requireRole?: "user" | "admin"
+  path: string;
+  label: string;
+  icon?: LucideIcon;
+  requireRole?: "user" | "system_administrator";
 }
 
 export interface ModuleMetadata {
-  id: string
-  name: string
-  description: string
-  icon: LucideIcon
-  version: string
-  enabled: boolean
-  requiredRoles: ("user" | "admin")[]
-  routes: ModuleRoute[]
-  featureFlags?: string[]
+  id: string;
+  name: string;
+  description: string;
+  icon: LucideIcon;
+  version: string;
+  enabled: boolean;
+  requiredRoles: ("user" | "system_administrator")[];
+  routes: ModuleRoute[];
+  featureFlags?: string[];
 }
 
 // Module registry - add new modules here
@@ -28,7 +37,7 @@ export const moduleRegistry: ModuleMetadata[] = [
     icon: Fuel,
     version: "1.0.0",
     enabled: true,
-    requiredRoles: ["user", "admin"],
+    requiredRoles: ["user", "system_administrator"],
     routes: [
       {
         path: "/fuel-log",
@@ -64,49 +73,59 @@ export const moduleRegistry: ModuleMetadata[] = [
   },
   {
     id: "admin",
-    name: "Admin Panel",
+    name: "Administrator Panel",
     description: "User management and system administration",
     icon: Shield,
     version: "1.0.0",
     enabled: true,
-    requiredRoles: ["admin"],
+    requiredRoles: ["system_administrator"],
     routes: [
       {
         path: "/admin",
         label: "Dashboard",
         icon: BarChart3,
-        requireRole: "admin",
+        requireRole: "system_administrator",
       },
       {
         path: "/admin/users",
         label: "User Management",
         icon: Users,
-        requireRole: "admin",
+        requireRole: "system_administrator",
       },
       {
         path: "/admin/modules",
         label: "Module Settings",
         icon: Settings,
-        requireRole: "admin",
+        requireRole: "system_administrator",
       },
     ],
   },
-]
+];
 
 // Helper functions
 export function getEnabledModules(): ModuleMetadata[] {
-  return moduleRegistry.filter((module) => module.enabled)
+  return moduleRegistry.filter((module) => module.enabled);
 }
 
 export function getModuleById(id: string): ModuleMetadata | undefined {
-  return moduleRegistry.find((module) => module.id === id)
+  return moduleRegistry.find((module) => module.id === id);
 }
 
-export function getModulesForRole(role: "user" | "admin"): ModuleMetadata[] {
-  return getEnabledModules().filter((module) => module.requiredRoles.includes(role))
+export function getModulesForRole(
+  role: "user" | "system_administrator"
+): ModuleMetadata[] {
+  return getEnabledModules().filter((module) =>
+    module.requiredRoles.includes(role)
+  );
 }
 
-export function getRoutesForRole(role: "user" | "admin"): ModuleRoute[] {
-  const modules = getModulesForRole(role)
-  return modules.flatMap((module) => module.routes.filter((route) => !route.requireRole || route.requireRole === role))
+export function getRoutesForRole(
+  role: "user" | "system_administrator"
+): ModuleRoute[] {
+  const modules = getModulesForRole(role);
+  return modules.flatMap((module) =>
+    module.routes.filter(
+      (route) => !route.requireRole || route.requireRole === role
+    )
+  );
 }

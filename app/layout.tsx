@@ -1,41 +1,59 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
-import { ClerkProvider } from "@clerk/nextjs"
-import "./globals.css"
-import { QueryProvider } from "@/components/providers/query-provider"
-import { ThemeProvider } from "@/components/theme/theme-provider"
+import { QueryProvider } from "@/components/providers/query-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
+import { Inter, Montserrat } from "next/font/google";
+import type React from "react";
+import "./globals.css";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-montserrat",
+  weight: ["400", "600", "700", "900"],
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+  weight: ["400", "500", "600"],
+});
 
 export const metadata: Metadata = {
-  title: "Modular Fuel App",
-  description: "A modular full-stack application for fuel and vehicle management",
+  title: "FleetPro - Professional Fleet Management",
+  description:
+    "Enterprise-grade modular application for comprehensive fleet, fuel, and vehicle management with advanced analytics",
   generator: "v0.app",
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html
+        lang="en"
+        suppressHydrationWarning
+        className={`dark ${montserrat.variable} ${inter.variable}`}
+      >
         <head>
           <style>{`
 html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
+  font-family: ${inter.style.fontFamily};
+  --font-sans: ${inter.style.fontFamily};
+  --font-heading: ${montserrat.style.fontFamily};
 }
           `}</style>
         </head>
-        <body>
-          <ThemeProvider defaultTheme="system" defaultThemeId="default">
+        <body className="font-sans antialiased">
+          <ThemeProvider defaultTheme="dark" defaultThemeId="default">
             <QueryProvider>{children}</QueryProvider>
           </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }

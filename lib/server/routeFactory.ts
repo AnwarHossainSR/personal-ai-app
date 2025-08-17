@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
+import { getAuthUser } from "@/lib/auth/clerk-helpers"
 
 export interface RouteContext {
   user?: {
@@ -46,9 +47,16 @@ export function createRouteHandler<TInput = any, TOutput = any>(
 ) {
   return async (request: NextRequest, { params }: { params?: Record<string, string> } = {}) => {
     try {
-      // Get user context (simplified for now)
+      const authUser = await getAuthUser()
       const context: RouteContext = {
-        user: undefined, // TODO: Get from session/JWT
+        user: authUser
+          ? {
+              id: authUser.userId,
+              email: authUser.email,
+              role: authUser.role,
+              is_blocked: false, // TODO: Check database for actual status
+            }
+          : undefined,
         params,
       }
 

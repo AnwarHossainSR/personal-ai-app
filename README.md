@@ -5,7 +5,7 @@ A modular full-stack web application built with Next.js 15 and MongoDB, featurin
 ## Features
 
 - **Modular Architecture**: Plug-and-play modules with automatic registration
-- **Authentication**: JWT-based auth with role-based access control
+- **Authentication**: Clerk authentication with role-based access control
 - **Admin Panel**: User management, role controls, and audit logging
 - **Fuel Log Module**: Vehicle tracking, fuel consumption, and service records
 - **Theme System**: Multiple color themes with light/dark mode support
@@ -17,7 +17,7 @@ A modular full-stack web application built with Next.js 15 and MongoDB, featurin
 - **Frontend**: Next.js 15, React 18, Tailwind CSS v4
 - **Backend**: Next.js API Routes, Server Actions
 - **Database**: MongoDB with Mongoose
-- **Authentication**: JWT with HttpOnly cookies
+- **Authentication**: Clerk with role-based access control
 - **State Management**: React Query (TanStack Query), Zustand
 - **UI Components**: shadcn/ui, Radix UI
 - **Charts**: Recharts
@@ -30,6 +30,7 @@ A modular full-stack web application built with Next.js 15 and MongoDB, featurin
 
 - Node.js 18+ 
 - MongoDB (local or cloud)
+- Clerk account for authentication
 - pnpm (recommended) or npm
 
 ### Installation
@@ -52,9 +53,16 @@ cp .env.example .env.local
 
 Edit `.env.local` with your configuration:
 \`\`\`env
-MONGODB_URI=mongodb://admin:password@localhost:27017/modular_app?authSource=admin
-JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=7d
+# MongoDB Connection
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
+
+# Clerk Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
 \`\`\`
 
 4. Start MongoDB (if using Docker):
@@ -76,10 +84,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see the application.
 
 ### Demo Accounts
 
-After seeding the database, you can use these accounts:
-
-- **Admin**: admin@example.com / admin123
-- **User**: demo@example.com / user123
+After seeding the database and setting up Clerk, create test accounts through the Clerk dashboard or sign-up flow.
 
 ## Module Development
 
