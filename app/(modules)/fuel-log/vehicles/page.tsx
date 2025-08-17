@@ -66,13 +66,7 @@ export default function VehiclesPage() {
   }, [isLoaded, user]);
 
   if (!isLoaded || loading) {
-    return (
-      <ClientLayout>
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500"></div>
-        </div>
-      </ClientLayout>
-    );
+    return null;
   }
 
   return (

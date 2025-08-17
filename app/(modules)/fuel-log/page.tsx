@@ -25,15 +25,6 @@ import {
   YAxis,
 } from "recharts";
 
-// Simple layout component to avoid server-only imports
-function ClientLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto max-w-7xl">{children}</div>
-    </div>
-  );
-}
-
 export default function FuelLogDashboard() {
   const { user, isLoaded } = useUser();
   const [stats, setStats] = useState<any>({
