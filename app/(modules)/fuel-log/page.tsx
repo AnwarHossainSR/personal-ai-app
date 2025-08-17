@@ -86,7 +86,7 @@ export default function FuelLogDashboard() {
   return (
     <div className="space-y-8 p-6">
       {/* Header with Actions */}
-      <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 text-white">
+      <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold mb-2">Fuel Log Dashboard</h1>
@@ -95,7 +95,10 @@ export default function FuelLogDashboard() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button asChild className="bg-white text-teal-600 hover:bg-teal-50">
+            <Button
+              asChild
+              className="bg-white/10 text-white hover:bg-white/20"
+            >
               <Link href="/fuel-log/vehicles/new">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Vehicle

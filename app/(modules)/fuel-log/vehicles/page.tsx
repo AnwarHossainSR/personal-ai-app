@@ -150,7 +150,7 @@ export default function VehiclesPage() {
       <div className="container mx-auto max-w-7xl">
         <div className="space-y-8 p-4 sm:p-6">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-6 sm:p-8 text-white">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2">
@@ -162,7 +162,7 @@ export default function VehiclesPage() {
               </div>
               <Button
                 asChild
-                className="bg-white text-blue-600 hover:bg-blue-50 h-12 px-6 self-start sm:self-center"
+                className="bg-white/10 text-white hover:bg-white/20 h-12 px-6 self-start sm:self-center"
               >
                 <Link href="/fuel-log/vehicles/new">
                   <Plus className="mr-2 h-4 w-4" />
