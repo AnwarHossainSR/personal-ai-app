@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { MongoClient } = require("mongodb")
-const bcrypt = require("bcryptjs")
 
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://admin:password@localhost:27017/modular_app?authSource=admin"
 
@@ -24,15 +23,13 @@ async function seedDatabase() {
 
     console.log("Cleared existing data")
 
-    // Create admin user
-    const adminPassword = await bcrypt.hash("admin123", 12)
+    // Create admin user (Clerk will handle actual authentication)
     const adminUser = {
       email: "admin@example.com",
-      password: adminPassword,
       full_name: "System Administrator",
       role: "admin",
       is_blocked: false,
-      email_verified: true,
+      clerk_id: "admin_clerk_id_placeholder", // Will be updated when user signs up through Clerk
       created_at: new Date(),
       updated_at: new Date(),
     }
@@ -40,15 +37,13 @@ async function seedDatabase() {
     const adminResult = await db.collection("users").insertOne(adminUser)
     console.log("Created admin user:", adminUser.email)
 
-    // Create demo user
-    const userPassword = await bcrypt.hash("user123", 12)
+    // Create demo user (Clerk will handle actual authentication)
     const demoUser = {
       email: "demo@example.com",
-      password: userPassword,
       full_name: "Demo User",
       role: "user",
       is_blocked: false,
-      email_verified: true,
+      clerk_id: "demo_clerk_id_placeholder", // Will be updated when user signs up through Clerk
       created_at: new Date(),
       updated_at: new Date(),
     }
@@ -140,8 +135,8 @@ async function seedDatabase() {
 
     console.log("\n✅ Database seeded successfully!")
     console.log("\n📋 Demo Accounts:")
-    console.log("Admin: admin@example.com / admin123")
-    console.log("User:  demo@example.com / user123")
+    console.log("Note: Authentication is handled by Clerk. Create accounts through the sign-up flow.")
+    console.log("Admin role will be assigned based on Clerk user metadata.")
   } catch (error) {
     console.error("Error seeding database:", error)
   } finally {

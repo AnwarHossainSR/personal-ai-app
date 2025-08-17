@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { redirect } from "next/navigation"
-import { getAuthUser } from "@/lib/auth/jwt"
+import { getAuthUser } from "@/lib/auth/clerk-helpers"
 
 export interface ActionContext {
   user?: {

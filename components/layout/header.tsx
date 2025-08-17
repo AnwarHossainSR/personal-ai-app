@@ -11,19 +11,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { User, Settings, LogOut } from "lucide-react"
-import { signOutAction } from "@/lib/auth/actions"
-import type { JWTPayload } from "@/lib/auth/jwt"
+import { SignOutButton } from "@clerk/nextjs"
+import type { ClerkUser } from "@/lib/auth/clerk-helpers"
 import { ThemeSwitcher } from "@/components/theme/theme-switcher"
 
 interface HeaderProps {
-  user: JWTPayload
+  user: ClerkUser
 }
 
 export function Header({ user }: HeaderProps) {
-  const handleSignOut = async () => {
-    await signOutAction({})
-  }
-
   const getInitials = (email: string) => {
     return email.substring(0, 2).toUpperCase()
   }
@@ -63,10 +59,12 @@ export function Header({ user }: HeaderProps) {
               <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
+            <SignOutButton>
+              <DropdownMenuItem>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </SignOutButton>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

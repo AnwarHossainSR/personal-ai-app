@@ -1,7 +1,7 @@
 import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
 import { DataGrid, type DataGridColumn } from "@/components/ui/data-grid"
-import { getAuthUser } from "@/lib/auth/jwt"
+import { getAuthUser } from "@/lib/auth/clerk-helpers"
 import { VehicleService } from "@/modules/fuel-log/services/vehicle-service"
 import type { IVehicle } from "@/modules/fuel-log/models/vehicle"
 import { Plus, Edit, Trash2 } from "lucide-react"

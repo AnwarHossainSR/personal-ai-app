@@ -1,7 +1,7 @@
 import { AppLayout } from "@/components/layout/app-layout"
 import { DataGrid, type DataGridColumn } from "@/components/ui/data-grid"
 import { Badge } from "@/components/ui/badge"
-import { getAuthUser } from "@/lib/auth/jwt"
+import { getAuthUser } from "@/lib/auth/clerk-helpers"
 import { UserManagementService } from "@/modules/admin/services/user-management-service"
 import type { IUser } from "@/lib/auth/models"
 import { UserActions } from "@/modules/admin/ui/user-actions"

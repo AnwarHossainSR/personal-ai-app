@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
-import { getAuthUser } from "@/lib/auth/jwt"
+import { getAuthUser } from "@/lib/auth/clerk-helpers"
 import { redirect } from "next/navigation"
 
 interface AppLayoutProps {

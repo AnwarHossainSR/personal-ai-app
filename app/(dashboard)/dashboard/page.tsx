@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/app-layout"
-import { getAuthUser } from "@/lib/auth/jwt"
+import { getAuthUser } from "@/lib/auth/clerk-helpers"
 import { getModulesForRole } from "@/modules/registry"
 import { FuelLogSummaryWidget, FuelLogChartWidget } from "@/components/dashboard/fuel-log-widgets"
 import { StatCard } from "@/components/ui/stat-card"
