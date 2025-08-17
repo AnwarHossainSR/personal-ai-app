@@ -30,7 +30,6 @@ export default async function AdminDashboard() {
     UserManagementService.getAuditLogs({ limit: 10 }),
   ]);
 
-  // Prepare chart data
   const userDistributionData = [
     {
       name: "Active Users",
