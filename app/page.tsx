@@ -8,16 +8,16 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Professional Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg">
                 <BarChart3 className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold font-heading text-foreground">FleetPro</h1>
-                <p className="text-xs text-muted-foreground">Enterprise Fleet Management</p>
+                <h1 className="text-xl font-bold font-heading text-foreground">FuelApp</h1>
+                <p className="text-xs text-muted-foreground">Professional Fleet Management</p>
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
@@ -44,12 +44,14 @@ export default function HomePage() {
               </SignedIn>
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="border-border hover:bg-accent bg-transparent">
                     Sign In
                   </Button>
                 </SignInButton>
                 <SignInButton mode="modal">
-                  <Button size="sm">Get Started</Button>
+                  <Button size="sm" className="bg-primary hover:bg-primary/90">
+                    Get Started
+                  </Button>
                 </SignInButton>
               </SignedOut>
             </nav>
@@ -62,12 +64,12 @@ export default function HomePage() {
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-5xl md:text-6xl font-black font-heading text-foreground mb-6 leading-tight">
-              Enterprise Fleet
-              <span className="text-primary block">Management Platform</span>
+              Professional Fleet
+              <span className="text-primary block">Management System</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Streamline operations, reduce costs, and maximize efficiency with our comprehensive modular fleet
-              management solution designed for enterprise-scale operations.
+              Streamline your fleet operations with our comprehensive fuel tracking, vehicle management, and analytics
+              platform designed for modern businesses.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -115,7 +117,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-card/30">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h3 className="text-3xl font-bold font-heading text-foreground mb-4">
@@ -127,13 +129,13 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary/50 bg-card">
               <CardHeader className="pb-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl font-heading">Fuel Management</CardTitle>
-                <CardDescription className="text-base">
+                <CardTitle className="text-xl font-heading text-foreground">Fuel Management</CardTitle>
+                <CardDescription className="text-base text-muted-foreground">
                   Comprehensive fuel tracking with real-time monitoring and cost optimization
                 </CardDescription>
               </CardHeader>
@@ -155,13 +157,13 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary/50 bg-card">
               <CardHeader className="pb-4">
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-secondary/20 rounded-lg flex items-center justify-center mb-4">
                   <Settings className="h-6 w-6 text-secondary" />
                 </div>
-                <CardTitle className="text-xl font-heading">Vehicle Operations</CardTitle>
-                <CardDescription className="text-base">
+                <CardTitle className="text-xl font-heading text-foreground">Vehicle Operations</CardTitle>
+                <CardDescription className="text-base text-muted-foreground">
                   Complete vehicle lifecycle management with predictive maintenance
                 </CardDescription>
               </CardHeader>
@@ -183,13 +185,13 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+            <Card className="border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:border-primary/50 bg-card">
               <CardHeader className="pb-4">
-                <div className="w-12 h-12 bg-chart-3/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-chart-3/20 rounded-lg flex items-center justify-center mb-4">
                   <BarChart3 className="h-6 w-6 text-chart-3" />
                 </div>
-                <CardTitle className="text-xl font-heading">Advanced Analytics</CardTitle>
-                <CardDescription className="text-base">
+                <CardTitle className="text-xl font-heading text-foreground">Advanced Analytics</CardTitle>
+                <CardDescription className="text-base text-muted-foreground">
                   Data-driven insights with customizable reporting and dashboards
                 </CardDescription>
               </CardHeader>
@@ -223,7 +225,7 @@ export default function HomePage() {
                 Ready to Transform Your Fleet Operations?
               </h3>
               <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join industry leaders who trust FleetPro to optimize their fleet management and reduce operational costs
+                Join industry leaders who trust FuelApp to optimize their fleet management and reduce operational costs
                 by up to 30%.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -242,15 +244,15 @@ export default function HomePage() {
       </SignedOut>
 
       {/* Footer */}
-      <footer className="py-12 px-4 border-t bg-muted/20">
+      <footer className="py-12 px-4 border-t border-border bg-card/20">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold font-heading">FleetPro</span>
+            <span className="text-lg font-bold font-heading text-foreground">FuelApp</span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2024 FleetPro. Enterprise Fleet Management Platform.</p>
+          <p className="text-sm text-muted-foreground">© 2024 FuelApp. Professional Fleet Management Platform.</p>
         </div>
       </footer>
     </div>

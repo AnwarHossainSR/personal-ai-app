@@ -4,74 +4,76 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #374151;
-  --card: #fdf2f8;
-  --card-foreground: #475569;
-  --popover: #ffffff;
-  --popover-foreground: #374151;
-  --primary: #475569;
+  /* Updated to professional dark theme with teal accents */
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #0d9488;
   --primary-foreground: #ffffff;
-  --secondary: #ec4899;
-  --secondary-foreground: #ffffff;
-  --muted: #fdf2f8;
-  --muted-foreground: #374151;
-  --accent: #ec4899;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --muted: #475569;
+  --muted-foreground: #94a3b8;
+  --accent: #0d9488;
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #f3f4f6;
-  --ring: rgba(236, 72, 153, 0.5);
-  --chart-1: #ec4899;
-  --chart-2: #475569;
-  --chart-3: #dc2626;
-  --chart-4: #a16207;
-  --chart-5: #f59e0b;
+  --border: #334155;
+  --input: #1e293b;
+  --ring: #0d9488;
+  --chart-1: #3b82f6;
+  --chart-2: #ec4899;
+  --chart-3: #f59e0b;
+  --chart-4: #4ade80;
+  --chart-5: #9333ea;
   --radius: 0.5rem;
-  --sidebar: #475569;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #374151;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ec4899;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: rgba(236, 72, 153, 0.5);
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #1e293b;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #334155;
+  --sidebar-ring: #0d9488;
 }
 
 .dark {
-  --background: #1f2937;
-  --foreground: #f9fafb;
-  --card: #374151;
-  --card-foreground: #f9fafb;
-  --popover: #374151;
-  --popover-foreground: #f9fafb;
-  --primary: #f9fafb;
-  --primary-foreground: #1f2937;
-  --secondary: #ec4899;
-  --secondary-foreground: #ffffff;
-  --muted: #4b5563;
-  --muted-foreground: #d1d5db;
-  --accent: #ec4899;
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --primary: #0d9488;
+  --primary-foreground: #ffffff;
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  --muted: #475569;
+  --muted-foreground: #94a3b8;
+  --accent: #0d9488;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #4b5563;
-  --input: #4b5563;
-  --ring: rgba(236, 72, 153, 0.5);
-  --chart-1: #ec4899;
-  --chart-2: #60a5fa;
-  --chart-3: #ef4444;
-  --chart-4: #f59e0b;
-  --chart-5: #10b981;
-  --sidebar: #374151;
-  --sidebar-foreground: #f9fafb;
-  --sidebar-primary: #ec4899;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #4b5563;
-  --sidebar-accent-foreground: #f9fafb;
-  --sidebar-border: #4b5563;
-  --sidebar-ring: rgba(236, 72, 153, 0.5);
+  --border: #334155;
+  --input: #1e293b;
+  --ring: #0d9488;
+  --chart-1: #3b82f6;
+  --chart-2: #ec4899;
+  --chart-3: #f59e0b;
+  --chart-4: #4ade80;
+  --chart-5: #9333ea;
+  --radius: 0.5rem;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #1e293b;
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #334155;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #334155;
+  --sidebar-ring: #0d9488;
 }
 
 @theme inline {
@@ -119,5 +121,25 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Force dark theme by default */
+    color-scheme: dark;
+  }
+
+  /* Enhanced scrollbar styling for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
   }
 }

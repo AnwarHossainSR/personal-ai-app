@@ -35,7 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning className={`${montserrat.variable} ${inter.variable}`}>
+      <html lang="en" suppressHydrationWarning className={`dark ${montserrat.variable} ${inter.variable}`}>
         <head>
           <style>{`
 html {
@@ -46,7 +46,7 @@ html {
           `}</style>
         </head>
         <body className="font-sans antialiased">
-          <ThemeProvider defaultTheme="system" defaultThemeId="default">
+          <ThemeProvider defaultTheme="dark" defaultThemeId="default">
             <QueryProvider>{children}</QueryProvider>
           </ThemeProvider>
         </body>
