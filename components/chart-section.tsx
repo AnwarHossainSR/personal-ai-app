@@ -32,6 +32,25 @@ export function ChartSection({
   userDistributionData,
   moduleUsageData,
 }: ChartSectionProps) {
+  // Define chart colors
+  const chartColors = {
+    primary: "#3b82f6", // Blue
+    secondary: "#10b981", // Green
+    accent: "#f59e0b", // Amber
+    warning: "#ef4444", // Red
+    info: "#8b5cf6", // Purple
+  };
+
+  // Enhanced module usage data with colors
+  const enhancedModuleData = moduleUsageData.map((module, index) => ({
+    ...module,
+    fill: module.enabled
+      ? index === 0
+        ? chartColors.primary
+        : chartColors.secondary
+      : chartColors.warning,
+  }));
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <ChartWrapper
@@ -49,7 +68,7 @@ export function ChartSection({
                 `${name} ${(percent * 100).toFixed(0)}%`
               }
               outerRadius={80}
-              fill="#8884d8"
+              fill={chartColors.primary}
               dataKey="value"
             >
               {userDistributionData.map((entry, index) => (
@@ -63,12 +82,33 @@ export function ChartSection({
 
       <ChartWrapper title="Module Usage" description="Active users per module">
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={moduleUsageData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="users" fill="hsl(var(--chart-1))" />
+          <BarChart data={enhancedModuleData}>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="rgba(255,255,255,0.1)"
+            />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: "rgba(255,255,255,0.7)" }}
+              axisLine={{ stroke: "rgba(255,255,255,0.2)" }}
+            />
+            <YAxis
+              tick={{ fill: "rgba(255,255,255,0.7)" }}
+              axisLine={{ stroke: "rgba(255,255,255,0.2)" }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "rgba(0, 0, 0, 0.8)",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                borderRadius: "8px",
+                color: "white",
+              }}
+            />
+            <Bar dataKey="users" radius={[4, 4, 0, 0]}>
+              {enhancedModuleData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </ChartWrapper>

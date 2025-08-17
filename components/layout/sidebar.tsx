@@ -71,7 +71,7 @@ export function Sidebar({ userRole, className }: SidebarProps) {
   };
 
   const isRouteActive = (path: string) => {
-    return pathname === path || pathname.startsWith(path + "/");
+    return pathname === path;
   };
   console.log("modules", modules);
   const SidebarContent = () => (
