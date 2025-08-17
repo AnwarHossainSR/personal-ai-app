@@ -1,20 +1,19 @@
-import { AppLayout } from "@/components/layout/app-layout"
-import { DataGrid, type DataGridColumn } from "@/components/ui/data-grid"
-import { Badge } from "@/components/ui/badge"
-import { getAuthUser } from "@/lib/auth/clerk-helpers"
-import { UserManagementService } from "@/modules/admin/services/user-management-service"
-import type { IUser } from "@/lib/auth/models"
-import { UserActions } from "@/modules/admin/ui/user-actions"
-import { Shield, User } from "lucide-react"
-import { redirect } from "next/navigation"
+import { Badge } from "@/components/ui/badge";
+import { DataGrid, type DataGridColumn } from "@/components/ui/data-grid";
+import { getAuthUser } from "@/lib/auth/clerk-helpers";
+import type { IUser } from "@/lib/auth/models";
+import { UserManagementService } from "@/modules/admin/services/user-management-service";
+import { UserActions } from "@/modules/admin/ui/user-actions";
+import { Shield, User } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default async function UsersManagementPage() {
-  const user = await getAuthUser()
+  const user = await getAuthUser();
   if (!user || user.role !== "admin") {
-    redirect("/dashboard")
+    redirect("/dashboard");
   }
 
-  const users = await UserManagementService.getAllUsers()
+  const users = await UserManagementService.getAllUsers();
 
   const columns: DataGridColumn<IUser>[] = [
     {
@@ -35,7 +34,11 @@ export default async function UsersManagementPage() {
       sortable: true,
       render: (value) => (
         <Badge variant={value === "admin" ? "default" : "secondary"}>
-          {value === "admin" ? <Shield className="mr-1 h-3 w-3" /> : <User className="mr-1 h-3 w-3" />}
+          {value === "admin" ? (
+            <Shield className="mr-1 h-3 w-3" />
+          ) : (
+            <User className="mr-1 h-3 w-3" />
+          )}
           {value}
         </Badge>
       ),
@@ -44,13 +47,21 @@ export default async function UsersManagementPage() {
       key: "is_blocked",
       header: "Status",
       sortable: true,
-      render: (value) => <Badge variant={value ? "destructive" : "default"}>{value ? "Blocked" : "Active"}</Badge>,
+      render: (value) => (
+        <Badge variant={value ? "destructive" : "default"}>
+          {value ? "Blocked" : "Active"}
+        </Badge>
+      ),
     },
     {
       key: "email_verified",
       header: "Verified",
       sortable: true,
-      render: (value) => <Badge variant={value ? "default" : "secondary"}>{value ? "Yes" : "No"}</Badge>,
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Yes" : "No"}
+        </Badge>
+      ),
     },
     {
       key: "created_at",
@@ -61,22 +72,29 @@ export default async function UsersManagementPage() {
     {
       key: "_id",
       header: "Actions",
-      render: (value, row) => <UserActions user={row} currentUserId={user.userId} />,
+      render: (value, row) => (
+        <UserActions user={row} currentUserId={user.userId} />
+      ),
     },
-  ]
+  ];
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-            <p className="text-muted-foreground">Manage user accounts, roles, and permissions.</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
+          <p className="text-muted-foreground">
+            Manage user accounts, roles, and permissions.
+          </p>
         </div>
-
-        <DataGrid data={users} columns={columns} emptyMessage="No users found." pageSize={20} />
       </div>
-    </AppLayout>
-  )
+
+      <DataGrid
+        data={users}
+        columns={columns}
+        emptyMessage="No users found."
+        pageSize={20}
+      />
+    </div>
+  );
 }

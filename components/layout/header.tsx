@@ -1,6 +1,8 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { ThemeSwitcher } from "@/components/theme/theme-switcher";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,21 +10,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { User, Settings, LogOut } from "lucide-react"
-import { SignOutButton } from "@clerk/nextjs"
-import type { ClerkUser } from "@/lib/auth/clerk-helpers"
-import { ThemeSwitcher } from "@/components/theme/theme-switcher"
+} from "@/components/ui/dropdown-menu";
+import type { ClerkUser } from "@/lib/auth/clerk-helpers";
+import { SignOutButton } from "@clerk/nextjs";
+import { LogOut, Settings, User } from "lucide-react";
 
 interface HeaderProps {
-  user: ClerkUser
+  user: ClerkUser;
 }
 
 export function Header({ user }: HeaderProps) {
   const getInitials = (email: string) => {
-    return email.substring(0, 2).toUpperCase()
-  }
+    return email.substring(0, 2).toUpperCase();
+  };
 
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-background border-b border-border">
@@ -46,7 +46,9 @@ export function Header({ user }: HeaderProps) {
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.email}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user.role}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.role}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -69,5 +71,5 @@ export function Header({ user }: HeaderProps) {
         </DropdownMenu>
       </div>
     </header>
-  )
+  );
 }
