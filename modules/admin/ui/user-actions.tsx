@@ -1,15 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -17,91 +9,156 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MoreHorizontal, Ban, CheckCircle, UserCog } from "lucide-react"
-import type { IUser } from "@/lib/auth/models"
-import { updateUserRoleAction, blockUserAction, unblockUserAction } from "../actions/user-actions"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import type { IUser } from "@/lib/auth/models";
+import {
+  AlertCircle,
+  Ban,
+  CheckCircle,
+  MoreHorizontal,
+  UserCog,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import {
+  blockUserAction,
+  unblockUserAction,
+  updateUserRoleAction,
+} from "../actions/user-actions";
 
 interface UserActionsProps {
-  user: IUser
-  currentUserId: string
+  user: IUser;
+  currentUserId: string;
 }
 
 export function UserActions({ user, currentUserId }: UserActionsProps) {
-  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false)
-  const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false)
-  const [isUnblockDialogOpen, setIsUnblockDialogOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<"user" | "admin">(user.role)
-  const [reason, setReason] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
+  const [isUnblockDialogOpen, setIsUnblockDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<"user" | "admin">(user.role);
+  const [reason, setReason] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const isCurrentUser = user._id.toString() === currentUserId
+  const isCurrentUser = user._id.toString() === currentUserId;
+
+  const resetDialog = () => {
+    setReason("");
+    setError(null);
+    setSelectedRole(user.role);
+  };
 
   const handleRoleChange = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
+    setError(null);
+
     try {
       const result = await updateUserRoleAction({
         userId: user._id.toString(),
         role: selectedRole,
         reason,
-      })
+      });
 
       if (result.success) {
-        setIsRoleDialogOpen(false)
-        setReason("")
-        router.refresh()
+        setIsRoleDialogOpen(false);
+        resetDialog();
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to update user role");
       }
     } catch (error) {
-      console.error("Failed to update role:", error)
+      console.error("Failed to update role:", error);
+      setError("An unexpected error occurred while updating the user role");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleBlock = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
+    setError(null);
+
     try {
       const result = await blockUserAction({
         userId: user._id.toString(),
         reason,
-      })
+      });
 
       if (result.success) {
-        setIsBlockDialogOpen(false)
-        setReason("")
-        router.refresh()
+        setIsBlockDialogOpen(false);
+        resetDialog();
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to block user");
       }
     } catch (error) {
-      console.error("Failed to block user:", error)
+      console.error("Failed to block user:", error);
+      setError("An unexpected error occurred while blocking the user");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleUnblock = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
+    setError(null);
+
     try {
       const result = await unblockUserAction({
         userId: user._id.toString(),
         reason,
-      })
+      });
 
       if (result.success) {
-        setIsUnblockDialogOpen(false)
-        setReason("")
-        router.refresh()
+        setIsUnblockDialogOpen(false);
+        resetDialog();
+        router.refresh();
+      } else {
+        setError(result.error || "Failed to unblock user");
       }
     } catch (error) {
-      console.error("Failed to unblock user:", error)
+      console.error("Failed to unblock user:", error);
+      setError("An unexpected error occurred while unblocking the user");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  const handleDialogClose = (dialogType: "role" | "block" | "unblock") => {
+    if (isLoading) return; // Prevent closing while loading
+
+    resetDialog();
+
+    switch (dialogType) {
+      case "role":
+        setIsRoleDialogOpen(false);
+        break;
+      case "block":
+        setIsBlockDialogOpen(false);
+        break;
+      case "unblock":
+        setIsUnblockDialogOpen(false);
+        break;
+    }
+  };
 
   return (
     <>
@@ -140,7 +197,10 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
       </DropdownMenu>
 
       {/* Role Change Dialog */}
-      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+      <Dialog
+        open={isRoleDialogOpen}
+        onOpenChange={() => handleDialogClose("role")}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Change User Role</DialogTitle>
@@ -148,10 +208,24 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
               Update the role for {user.full_name} ({user.email})
             </DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="role">New Role</Label>
-              <Select value={selectedRole} onValueChange={(value: "user" | "admin") => setSelectedRole(value)}>
+              <Select
+                value={selectedRole}
+                onValueChange={(value: "user" | "admin") =>
+                  setSelectedRole(value)
+                }
+                disabled={isLoading}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -168,11 +242,16 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for role change..."
+                disabled={isLoading}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsRoleDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => handleDialogClose("role")}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button onClick={handleRoleChange} disabled={isLoading}>
@@ -183,7 +262,10 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
       </Dialog>
 
       {/* Block User Dialog */}
-      <Dialog open={isBlockDialogOpen} onOpenChange={setIsBlockDialogOpen}>
+      <Dialog
+        open={isBlockDialogOpen}
+        onOpenChange={() => handleDialogClose("block")}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Block User</DialogTitle>
@@ -191,6 +273,14 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
               Block {user.full_name} ({user.email}) from accessing the system
             </DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="blockReason">Reason *</Label>
@@ -200,14 +290,23 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for blocking this user..."
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsBlockDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => handleDialogClose("block")}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleBlock} disabled={isLoading || !reason}>
+            <Button
+              variant="destructive"
+              onClick={handleBlock}
+              disabled={isLoading || !reason.trim()}
+            >
               {isLoading ? "Blocking..." : "Block User"}
             </Button>
           </DialogFooter>
@@ -215,7 +314,10 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
       </Dialog>
 
       {/* Unblock User Dialog */}
-      <Dialog open={isUnblockDialogOpen} onOpenChange={setIsUnblockDialogOpen}>
+      <Dialog
+        open={isUnblockDialogOpen}
+        onOpenChange={() => handleDialogClose("unblock")}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Unblock User</DialogTitle>
@@ -223,6 +325,14 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
               Restore access for {user.full_name} ({user.email})
             </DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="unblockReason">Reason (Optional)</Label>
@@ -231,11 +341,16 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for unblocking this user..."
+                disabled={isLoading}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsUnblockDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => handleDialogClose("unblock")}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button onClick={handleUnblock} disabled={isLoading}>
@@ -245,5 +360,5 @@ export function UserActions({ user, currentUserId }: UserActionsProps) {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
