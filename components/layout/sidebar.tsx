@@ -73,7 +73,7 @@ export function Sidebar({ userRole, className }: SidebarProps) {
   const isRouteActive = (path: string) => {
     return pathname === path;
   };
-  console.log("modules", modules);
+
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-sidebar">
       <div className="flex items-center justify-between p-6 border-b border-sidebar-border">

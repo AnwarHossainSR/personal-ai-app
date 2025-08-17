@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { ClerkUser } from "@/lib/auth/clerk-helpers";
+import { ClerkUser } from "@/lib/auth/types";
 import { SignOutButton } from "@clerk/nextjs";
 import { LogOut, Settings, User } from "lucide-react";
 

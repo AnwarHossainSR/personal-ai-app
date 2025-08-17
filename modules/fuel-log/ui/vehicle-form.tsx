@@ -1,24 +1,38 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { createVehicleAction } from "../actions/vehicle-actions"
-import type { VehicleInput } from "../validators"
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { useState, useTransition } from "react";
+import { createVehicleAction } from "../actions/vehicle-actions";
+import type { VehicleInput } from "../validators";
 
 interface VehicleFormProps {
-  initialData?: Partial<VehicleInput>
-  isEditing?: boolean
+  initialData?: Partial<VehicleInput>;
+  isEditing?: boolean;
 }
 
-export function VehicleForm({ initialData, isEditing = false }: VehicleFormProps) {
+export function VehicleForm({
+  initialData,
+  isEditing = false,
+}: VehicleFormProps) {
   const [formData, setFormData] = useState<VehicleInput>({
     name: initialData?.name || "",
     type: initialData?.type || "car",
@@ -26,41 +40,43 @@ export function VehicleForm({ initialData, isEditing = false }: VehicleFormProps
     model: initialData?.model || "",
     year: initialData?.year || new Date().getFullYear(),
     fuel_type: initialData?.fuel_type || "gasoline",
-  })
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const router = useRouter()
+  });
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setError("");
 
-    try {
-      const result = await createVehicleAction(formData)
+    startTransition(async () => {
+      try {
+        const result = await createVehicleAction(formData);
 
-      if (result.success) {
-        router.push("/fuel-log/vehicles")
-      } else {
-        setError(result.error || "Failed to save vehicle")
+        if (result.success) {
+          router.push("/fuel-log/vehicles");
+        } else {
+          setError(result.error || "Failed to save vehicle");
+        }
+      } catch (error) {
+        setError("An unexpected error occurred");
       }
-    } catch (error) {
-      setError("An unexpected error occurred")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    });
+  };
 
-  const handleChange = (field: keyof VehicleInput) => (value: string | number) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+  const handleChange =
+    (field: keyof VehicleInput) => (value: string | number) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>{isEditing ? "Edit Vehicle" : "Add New Vehicle"}</CardTitle>
         <CardDescription>
-          {isEditing ? "Update vehicle information" : "Enter the details for your new vehicle"}
+          {isEditing
+            ? "Update vehicle information"
+            : "Enter the details for your new vehicle"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -85,7 +101,10 @@ export function VehicleForm({ initialData, isEditing = false }: VehicleFormProps
 
             <div className="space-y-2">
               <Label htmlFor="type">Vehicle Type</Label>
-              <Select value={formData.type} onValueChange={handleChange("type")}>
+              <Select
+                value={formData.type}
+                onValueChange={handleChange("type")}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -126,7 +145,9 @@ export function VehicleForm({ initialData, isEditing = false }: VehicleFormProps
                 id="year"
                 type="number"
                 value={formData.year}
-                onChange={(e) => handleChange("year")(Number.parseInt(e.target.value))}
+                onChange={(e) =>
+                  handleChange("year")(Number.parseInt(e.target.value))
+                }
                 min="1900"
                 max={new Date().getFullYear() + 1}
                 required
@@ -135,7 +156,10 @@ export function VehicleForm({ initialData, isEditing = false }: VehicleFormProps
 
             <div className="space-y-2">
               <Label htmlFor="fuel_type">Fuel Type</Label>
-              <Select value={formData.fuel_type} onValueChange={handleChange("fuel_type")}>
+              <Select
+                value={formData.fuel_type}
+                onValueChange={handleChange("fuel_type")}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -150,15 +174,23 @@ export function VehicleForm({ initialData, isEditing = false }: VehicleFormProps
           </div>
 
           <div className="flex gap-4 pt-4">
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isEditing ? "Update Vehicle" : "Add Vehicle"}
+            <Button type="submit" disabled={isPending}>
+              {isPending
+                ? "Saving..."
+                : isEditing
+                  ? "Update Vehicle"
+                  : "Add Vehicle"}
             </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
               Cancel
             </Button>
           </div>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
