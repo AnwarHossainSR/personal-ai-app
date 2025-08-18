@@ -4,6 +4,7 @@ import {
   ConfirmationDialog,
   useConfirmation,
 } from "@/components/confirmation-dialog";
+import { FuelLogModalForm } from "@/components/FuelLogModalForm";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -975,7 +976,84 @@ export default function FuelLogPage() {
         </div>
       </div>
 
-      {/* Modals would go here - Add and Edit Fuel Log forms */}
+      {/* Add Fuel Log Modal */}
+      <FuelLogModalForm
+        isOpen={addModal.isOpen}
+        onClose={addModal.closeModal}
+        vehicles={vehicles}
+        onSubmit={async (data) => {
+          // Simulate adding new fuel log
+          const newLog: FuelLog = {
+            _id: Date.now().toString(),
+            vehicle_id: data.vehicle_id,
+            vehicle_name:
+              vehicles.find((v) => v._id === data.vehicle_id)?.name ||
+              "Unknown Vehicle",
+            date: data.date,
+            odometer: data.odometer,
+            volume: data.volume,
+            unit_price: data.unit_price,
+            total_cost: data.total_cost,
+            station: data.station,
+            notes: data.notes,
+            mileage: Math.random() * 10 + 15, // Simulated mileage calculation
+            distance_traveled: Math.random() * 200 + 300, // Simulated distance
+          };
+
+          const updatedLogs = [newLog, ...fuelLogs];
+          setFuelLogs(updatedLogs);
+          calculateStats(updatedLogs, selectedVehicle);
+        }}
+      />
+
+      {/* Edit Fuel Log Modal */}
+      <FuelLogModalForm
+        isOpen={editModal.isOpen}
+        onClose={editModal.closeModal}
+        vehicles={vehicles}
+        initialData={
+          selectedLog
+            ? {
+                vehicle_id: selectedLog.vehicle_id,
+                date: selectedLog.date,
+                odometer: selectedLog.odometer,
+                volume: selectedLog.volume,
+                unit_price: selectedLog.unit_price,
+                total_cost: selectedLog.total_cost,
+                station: selectedLog.station,
+                notes: selectedLog.notes,
+              }
+            : undefined
+        }
+        isEditing={true}
+        onSubmit={async (data) => {
+          if (!selectedLog) return;
+
+          // Simulate updating fuel log
+          const updatedLogs = fuelLogs.map((log) =>
+            log._id === selectedLog._id
+              ? {
+                  ...log,
+                  vehicle_id: data.vehicle_id,
+                  vehicle_name:
+                    vehicles.find((v) => v._id === data.vehicle_id)?.name ||
+                    "Unknown Vehicle",
+                  date: data.date,
+                  odometer: data.odometer,
+                  volume: data.volume,
+                  unit_price: data.unit_price,
+                  total_cost: data.total_cost,
+                  station: data.station,
+                  notes: data.notes,
+                }
+              : log
+          );
+
+          setFuelLogs(updatedLogs);
+          calculateStats(updatedLogs, selectedVehicle);
+          setSelectedLog(null);
+        }}
+      />
 
       {/* Confirmation Dialog */}
       {confirmation.config && (
