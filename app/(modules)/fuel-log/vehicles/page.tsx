@@ -13,71 +13,69 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Modal, useModal } from "@/components/ui/modal";
+import { toast } from "@/components/ui/use-toast";
+import {
+  deleteVehicleAction,
+  updateVehicleAction,
+} from "@/modules/fuel-log/actions/vehicle-actions";
+import { IVehicle } from "@/modules/fuel-log/models/vehicle";
 import { VehicleForm } from "@/modules/fuel-log/ui/vehicle-form";
 import { Car, Edit, Fuel, Plus, Settings, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-interface Vehicle {
-  _id: string;
-  name: string;
-  make: string;
-  model: string;
-  year: number;
-  type: string;
-  fuel_type: string;
-}
-
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicles, setVehicles] = useState<IVehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<IVehicle | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Modal hooks
   const editModal = useModal();
   const confirmation = useConfirmation();
 
-  useEffect(() => {
-    setTimeout(() => {
-      setVehicles([
-        {
-          _id: "1",
-          name: "My Honda Civic",
-          make: "Honda",
-          model: "Civic",
-          year: 2020,
-          type: "car",
-          fuel_type: "gasoline",
+  async function loadVehicles() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/vehicles", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
         },
-        {
-          _id: "2",
-          name: "Work Truck",
-          make: "Ford",
-          model: "F-150",
-          year: 2019,
-          type: "truck",
-          fuel_type: "gasoline",
-        },
-        {
-          _id: "3",
-          name: "Weekend Bike",
-          make: "Harley",
-          model: "Sportster",
-          year: 2021,
-          type: "motorcycle",
-          fuel_type: "gasoline",
-        },
-      ]);
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch vehicles");
+      }
+
+      const userVehicles = await response.json();
+      setVehicles(userVehicles);
+    } catch (err) {
+      setError("Failed to load vehicles");
+      console.error("Error loading vehicles:", err);
+      toast({
+        title: "Error",
+        description: "Failed to load vehicles. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  }
+
+  // Load vehicles on component mount
+  useEffect(() => {
+    loadVehicles();
   }, []);
 
-  const handleEdit = (vehicle: Vehicle) => {
+  const handleEdit = (vehicle: IVehicle) => {
     setSelectedVehicle(vehicle);
     editModal.openModal();
   };
 
-  const handleDelete = (vehicle: Vehicle) => {
+  const handleDelete = (vehicle: IVehicle) => {
     confirmation.confirm({
       title: "Delete Vehicle",
       description: `Are you sure you want to delete "${vehicle.name}"? This action cannot be undone and will remove all associated fuel logs and service records.`,
@@ -86,30 +84,79 @@ export default function VehiclesPage() {
       type: "danger",
       destructive: true,
       onConfirm: async () => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+          const result = await deleteVehicleAction({
+            id: vehicle.id!, // Use id
+            name: vehicle.name,
+          });
 
-        // Remove vehicle from list
-        setVehicles((prev) => prev.filter((v) => v._id !== vehicle._id));
+          if (result.success) {
+            // Remove vehicle from local state
+            setVehicles((prev) => prev.filter((v) => v.id !== vehicle.id));
 
-        console.log(`Deleted vehicle: ${vehicle.name}`);
+            toast({
+              title: "Success",
+              description: `Vehicle "${vehicle.name}" has been deleted.`,
+            });
+          } else {
+            toast({
+              title: "Error",
+              description: result.error || "Failed to delete vehicle",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error("Error deleting vehicle:", error);
+          toast({
+            title: "Error",
+            description:
+              "An unexpected error occurred while deleting the vehicle.",
+            variant: "destructive",
+          });
+        }
       },
     });
   };
 
   const handleEditSubmit = async (formData: any) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!selectedVehicle) return;
 
-    // Update vehicle in list
-    setVehicles((prev) =>
-      prev.map((v) =>
-        v._id === selectedVehicle?._id ? { ...v, ...formData } : v
-      )
-    );
+    try {
+      const result = await updateVehicleAction({
+        id: selectedVehicle.id!, // Use id
+        ...formData,
+      });
 
-    editModal.closeModal();
-    setSelectedVehicle(null);
+      if (result.success) {
+        // Update vehicle in local state
+        setVehicles((prev) =>
+          prev.map((v) =>
+            v.id === selectedVehicle.id ? { ...v, ...formData } : v
+          )
+        );
+
+        editModal.closeModal();
+        setSelectedVehicle(null);
+
+        toast({
+          title: "Success",
+          description: "Vehicle updated successfully.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to update vehicle",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating vehicle:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while updating the vehicle.",
+        variant: "destructive",
+      });
+    }
   };
 
   const vehicleTypeEmoji = {
@@ -120,6 +167,8 @@ export default function VehiclesPage() {
   };
 
   const fuelTypeColors = {
+    Octane:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
     gasoline:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
     diesel:
@@ -145,6 +194,30 @@ export default function VehiclesPage() {
     );
   }
 
+  // Show error state
+  if (error && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex items-center justify-center min-h-screen">
+            <Card className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
+              <CardContent className="text-center py-16 px-8">
+                <Car className="h-16 w-16 text-red-500 mx-auto mb-6" />
+                <h3 className="text-xl font-semibold mb-2 text-red-600">
+                  Failed to Load Vehicles
+                </h3>
+                <p className="text-muted-foreground mb-6">{error}</p>
+                <Button onClick={() => loadVehicles()} variant="outline">
+                  Try Again
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto max-w-7xl">
@@ -158,6 +231,10 @@ export default function VehiclesPage() {
                 </h1>
                 <p className="text-blue-100 text-base sm:text-lg">
                   Manage your vehicles and track their information
+                </p>
+                <p className="text-blue-200 text-sm mt-1">
+                  {vehicles.length} vehicle{vehicles.length !== 1 ? "s" : ""}{" "}
+                  registered
                 </p>
               </div>
               <Button
@@ -195,7 +272,7 @@ export default function VehiclesPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {vehicles.map((vehicle) => (
                 <Card
-                  key={vehicle._id}
+                  key={vehicle.id} // Use id
                   className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-800/80"
                 >
                   <CardHeader className="pb-3">
@@ -246,7 +323,7 @@ export default function VehiclesPage() {
                           Make & Model
                         </span>
                         <span className="text-sm font-medium">
-                          {vehicle.make} {vehicle.model}
+                          {vehicle.make} {vehicle.vehicleModel}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
@@ -262,7 +339,11 @@ export default function VehiclesPage() {
                           Fuel Type
                         </span>
                         <span
-                          className={`text-xs font-medium px-2 py-1 rounded-full ${fuelTypeColors[vehicle.fuel_type as keyof typeof fuelTypeColors]}`}
+                          className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            fuelTypeColors[
+                              vehicle.fuel_type as keyof typeof fuelTypeColors
+                            ] || fuelTypeColors.gasoline
+                          }`}
                         >
                           {vehicle.fuel_type.replace("_", " ").toUpperCase()}
                         </span>
@@ -275,18 +356,28 @@ export default function VehiclesPage() {
                         <Button
                           variant="outline"
                           size="sm"
+                          asChild
                           className="bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400"
                         >
-                          <Fuel className="mr-1 h-3 w-3" />
-                          <span className="text-xs">Fuel Log</span>
+                          <Link
+                            href={`/fuel-log/vehicles/${vehicle.id}/fuel-logs`} // Use id
+                          >
+                            <Fuel className="mr-1 h-3 w-3" />
+                            <span className="text-xs">Fuel Log</span>
+                          </Link>
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          asChild
                           className="bg-transparent hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-400"
                         >
-                          <Settings className="mr-1 h-3 w-3" />
-                          <span className="text-xs">Service</span>
+                          <Link
+                            href={`/fuel-log/vehicles/${vehicle.id}/service-logs`} // Use id
+                          >
+                            <Settings className="mr-1 h-3 w-3" />
+                            <span className="text-xs">Service</span>
+                          </Link>
                         </Button>
                       </div>
                     </div>

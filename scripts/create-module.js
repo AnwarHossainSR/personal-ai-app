@@ -1,21 +1,23 @@
 #!/usr/bin/env node
 
-const fs = require("fs")
-const path = require("path")
+const fs = require("fs");
+const path = require("path");
 
-const moduleName = process.argv[2]
+const moduleName = process.argv[2];
 
 if (!moduleName) {
-  console.error("Please provide a module name: pnpm mod:new <name>")
-  process.exit(1)
+  console.error("Please provide a module name: npm mod:new <name>");
+  process.exit(1);
 }
 
-const moduleId = moduleName.toLowerCase().replace(/\s+/g, "-")
-const pascalName = moduleName.replace(/(?:^|\s)\S/g, (a) => a.toUpperCase()).replace(/\s+/g, "")
+const moduleId = moduleName.toLowerCase().replace(/\s+/g, "-");
+const pascalName = moduleName
+  .replace(/(?:^|\s)\S/g, (a) => a.toUpperCase())
+  .replace(/\s+/g, "");
 
 // Create module directory structure
-const moduleDir = path.join("modules", moduleId)
-const appModuleDir = path.join("app", "(modules)", moduleId)
+const moduleDir = path.join("modules", moduleId);
+const appModuleDir = path.join("app", "(modules)", moduleId);
 
 const directories = [
   moduleDir,
@@ -27,13 +29,13 @@ const directories = [
   path.join(moduleDir, "ui"),
   appModuleDir,
   path.join("tests", "modules", moduleId, "services"),
-]
+];
 
 directories.forEach((dir) => {
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true })
+    fs.mkdirSync(dir, { recursive: true });
   }
-})
+});
 
 // Template files
 const templates = {
@@ -193,22 +195,22 @@ describe('${pascalName}Service', () => {
   })
 })
 `,
-}
+};
 
 // Write template files
 Object.entries(templates).forEach(([filePath, content]) => {
-  fs.writeFileSync(filePath, content)
-  console.log(`Created: ${filePath}`)
-})
+  fs.writeFileSync(filePath, content);
+  console.log(`Created: ${filePath}`);
+});
 
-console.log(`\n✅ Module "${moduleName}" created successfully!`)
-console.log(`\n📁 Files created:`)
-console.log(`   - modules/${moduleId}/`)
-console.log(`   - app/(modules)/${moduleId}/`)
-console.log(`   - tests/modules/${moduleId}/`)
-console.log(`\n🔧 Next steps:`)
-console.log(`   1. Add the module to modules/registry.ts`)
-console.log(`   2. Implement your business logic in the service layer`)
-console.log(`   3. Create UI components in modules/${moduleId}/ui/`)
-console.log(`   4. Add API routes if needed`)
-console.log(`   5. Write tests for your module`)
+console.log(`\n✅ Module "${moduleName}" created successfully!`);
+console.log(`\n📁 Files created:`);
+console.log(`   - modules/${moduleId}/`);
+console.log(`   - app/(modules)/${moduleId}/`);
+console.log(`   - tests/modules/${moduleId}/`);
+console.log(`\n🔧 Next steps:`);
+console.log(`   1. Add the module to modules/registry.ts`);
+console.log(`   2. Implement your business logic in the service layer`);
+console.log(`   3. Create UI components in modules/${moduleId}/ui/`);
+console.log(`   4. Add API routes if needed`);
+console.log(`   5. Write tests for your module`);

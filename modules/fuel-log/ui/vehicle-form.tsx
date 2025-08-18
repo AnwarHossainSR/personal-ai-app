@@ -18,23 +18,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
 import { AlertTriangle, ArrowLeft, Car, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState, useTransition } from "react";
 import { createVehicleAction } from "../actions/vehicle-actions";
-import type { VehicleInput } from "../validators";
+import type { IVehicle } from "../models/vehicle";
 
 interface VehicleFormProps {
-  initialData?: Partial<VehicleInput>;
+  initialData?: Partial<IVehicle>;
   isEditing?: boolean;
+  onSubmit?: (data: any) => Promise<void>;
 }
 
 export function VehicleForm({
   initialData,
   isEditing = false,
+  onSubmit,
 }: VehicleFormProps) {
-  const [formData, setFormData] = useState<VehicleInput>({
+  const [formData, setFormData] = useState({
     name: initialData?.name || "",
     type: initialData?.type || "car",
     make: initialData?.make || "",
@@ -50,25 +53,55 @@ export function VehicleForm({
     e.preventDefault();
     setError("");
 
+    // Validation
+    if (!formData.name.trim()) {
+      setError("Vehicle name is required");
+      return;
+    }
+    if (!formData.make.trim()) {
+      setError("Vehicle make is required");
+      return;
+    }
+    if (!formData.model.trim()) {
+      setError("Vehicle model is required");
+      return;
+    }
+    if (formData.year < 1900 || formData.year > new Date().getFullYear() + 1) {
+      setError("Please enter a valid year");
+      return;
+    }
+
     startTransition(async () => {
       try {
-        const result = await createVehicleAction(formData);
-
-        if (result.success) {
-          router.push("/fuel-log/vehicles");
+        if (onSubmit) {
+          // If onSubmit is provided (editing mode), use it
+          await onSubmit(formData);
         } else {
-          setError(result.error || "Failed to save vehicle");
+          // Otherwise, create new vehicle
+          const result = await createVehicleAction(formData);
+
+          if (result.success) {
+            toast({
+              title: "Success",
+              description: `Vehicle "${formData.name}" has been ${isEditing ? "updated" : "created"} successfully.`,
+            });
+            router.push("/fuel-log/vehicles");
+          } else {
+            setError(result.error || "Failed to save vehicle");
+          }
         }
       } catch (error) {
+        console.error("Error saving vehicle:", error);
         setError("An unexpected error occurred");
       }
     });
   };
 
-  const handleChange =
-    (field: keyof VehicleInput) => (value: string | number) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    };
+  const handleChange = (field: string) => (value: string | number) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (error) setError("");
+  };
 
   const vehicleTypeIcons = {
     car: "🚗",
@@ -78,6 +111,8 @@ export function VehicleForm({
   };
 
   const fuelTypeColors = {
+    Octane:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
     gasoline:
       "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400",
     diesel:
@@ -86,6 +121,8 @@ export function VehicleForm({
       "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
     hybrid: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
   };
+
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -129,7 +166,7 @@ export function VehicleForm({
                   htmlFor="name"
                   className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
-                  Vehicle Name
+                  Vehicle Name *
                 </Label>
                 <Input
                   id="name"
@@ -147,7 +184,7 @@ export function VehicleForm({
                     htmlFor="type"
                     className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                   >
-                    Vehicle Type
+                    Vehicle Type *
                   </Label>
                   <Select
                     value={formData.type}
@@ -190,7 +227,7 @@ export function VehicleForm({
                     htmlFor="fuel_type"
                     className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                   >
-                    Fuel Type
+                    Fuel Type *
                   </Label>
                   <Select
                     value={formData.fuel_type}
@@ -200,6 +237,12 @@ export function VehicleForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="Octane" className="text-base py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                          <span>Octane</span>
+                        </div>
+                      </SelectItem>
                       <SelectItem value="gasoline" className="text-base py-3">
                         <div className="flex items-center gap-2">
                           <div className="w-3 h-3 rounded-full bg-orange-500"></div>
@@ -242,7 +285,7 @@ export function VehicleForm({
                     htmlFor="make"
                     className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                   >
-                    Make
+                    Make *
                   </Label>
                   <Input
                     id="make"
@@ -259,7 +302,7 @@ export function VehicleForm({
                     htmlFor="model"
                     className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                   >
-                    Model
+                    Model *
                   </Label>
                   <Input
                     id="model"
@@ -276,17 +319,19 @@ export function VehicleForm({
                     htmlFor="year"
                     className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                   >
-                    Year
+                    Year *
                   </Label>
                   <Input
                     id="year"
                     type="number"
                     value={formData.year}
                     onChange={(e) =>
-                      handleChange("year")(Number.parseInt(e.target.value))
+                      handleChange("year")(
+                        Number.parseInt(e.target.value) || currentYear
+                      )
                     }
                     min="1900"
-                    max={new Date().getFullYear() + 1}
+                    max={currentYear + 1}
                     className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base"
                     required
                   />
@@ -320,7 +365,11 @@ export function VehicleForm({
                       </div>
                     </div>
                     <div
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${fuelTypeColors[formData.fuel_type as keyof typeof fuelTypeColors]}`}
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        fuelTypeColors[
+                          formData.fuel_type as keyof typeof fuelTypeColors
+                        ] || fuelTypeColors.gasoline
+                      }`}
                     >
                       {formData.fuel_type.replace("_", " ").toUpperCase()}
                     </div>
@@ -335,6 +384,7 @@ export function VehicleForm({
                 type="button"
                 variant="outline"
                 onClick={() => router.back()}
+                disabled={isPending}
                 className="h-12 flex-1 sm:flex-none bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
@@ -343,7 +393,7 @@ export function VehicleForm({
               <Button
                 type="submit"
                 disabled={isPending}
-                className="h-12 flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg"
+                className="h-12 flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="mr-2 h-4 w-4" />
                 {isPending
