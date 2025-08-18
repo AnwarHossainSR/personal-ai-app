@@ -30,22 +30,40 @@ import { vehicleSchema } from "../validators";
 interface VehicleFormProps {
   initialData?: Partial<IVehicle>;
   isEditing?: boolean;
-  onSubmit?: (data: any) => Promise<void>;
+  onSubmit?: (data: Partial<IVehicle>) => Promise<void>;
 }
+
+// Serialize initialData to ensure plain object without toJSON methods
+const serializeInitialData = (data?: Partial<IVehicle>): Partial<IVehicle> => {
+  if (!data) return {};
+  return {
+    id: data.id,
+    name: data.name || "",
+    type: data.type || "car",
+    make: data.make || "",
+    vehicleModel: data.vehicleModel || "",
+    year: data.year || new Date().getFullYear(),
+    fuel_type: data.fuel_type || "gasoline",
+    // Convert Date objects to strings if present (optional, as not used in form)
+    created_at:
+      data.created_at instanceof Date
+        ? data.created_at.toISOString()
+        : data.created_at,
+    updated_at:
+      data.updated_at instanceof Date
+        ? data.updated_at.toISOString()
+        : data.updated_at,
+  };
+};
 
 export function VehicleForm({
   initialData,
   isEditing = false,
   onSubmit,
 }: VehicleFormProps) {
-  const [formData, setFormData] = useState({
-    name: initialData?.name || "",
-    type: initialData?.type || "car",
-    make: initialData?.make || "",
-    vehicleModel: initialData?.vehicleModel || "", // Changed from model to vehicleModel
-    year: initialData?.year || new Date().getFullYear(),
-    fuel_type: initialData?.fuel_type || "gasoline",
-  });
+  const [formData, setFormData] = useState<Partial<IVehicle>>(
+    serializeInitialData(initialData)
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -55,10 +73,10 @@ export function VehicleForm({
     setErrors({});
 
     // Validate form data with Zod schema
-    const result: any = vehicleSchema.safeParse(formData);
+    const result = vehicleSchema.safeParse(formData);
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
-      result?.error?.errors.forEach((error: any) => {
+      result.error.errors.forEach((error) => {
         const field = error.path[0];
         fieldErrors[field] = error.message;
       });
@@ -167,7 +185,7 @@ export function VehicleForm({
                 </Label>
                 <Input
                   id="name"
-                  value={formData.name}
+                  value={formData.name || ""}
                   onChange={(e) => handleChange("name")(e.target.value)}
                   placeholder="e.g., My Honda Civic"
                   className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base ${errors.name ? "border-red-500 dark:border-red-400" : ""}`}
@@ -189,7 +207,7 @@ export function VehicleForm({
                     Vehicle Type *
                   </Label>
                   <Select
-                    value={formData.type}
+                    value={formData.type || "car"}
                     onValueChange={handleChange("type")}
                   >
                     <SelectTrigger
@@ -239,7 +257,7 @@ export function VehicleForm({
                     Fuel Type *
                   </Label>
                   <Select
-                    value={formData.fuel_type}
+                    value={formData.fuel_type || "gasoline"}
                     onValueChange={handleChange("fuel_type")}
                   >
                     <SelectTrigger
@@ -305,7 +323,7 @@ export function VehicleForm({
                   </Label>
                   <Input
                     id="make"
-                    value={formData.make}
+                    value={formData.make || ""}
                     onChange={(e) => handleChange("make")(e.target.value)}
                     placeholder="e.g., Honda"
                     className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base ${errors.make ? "border-red-500 dark:border-red-400" : ""}`}
@@ -327,7 +345,7 @@ export function VehicleForm({
                   </Label>
                   <Input
                     id="vehicleModel"
-                    value={formData.vehicleModel}
+                    value={formData.vehicleModel || ""}
                     onChange={(e) =>
                       handleChange("vehicleModel")(e.target.value)
                     }
@@ -386,7 +404,8 @@ export function VehicleForm({
                     <div className="text-2xl">
                       {
                         vehicleTypeIcons[
-                          formData.type as keyof typeof vehicleTypeIcons
+                          (formData.type ||
+                            "car") as keyof typeof vehicleTypeIcons
                         ]
                       }
                     </div>
@@ -403,11 +422,14 @@ export function VehicleForm({
                     <div
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
                         fuelTypeColors[
-                          formData.fuel_type as keyof typeof fuelTypeColors
+                          (formData.fuel_type ||
+                            "gasoline") as keyof typeof fuelTypeColors
                         ] || fuelTypeColors.gasoline
                       }`}
                     >
-                      {formData.fuel_type.replace("_", " ").toUpperCase()}
+                      {(formData.fuel_type || "gasoline")
+                        .replace("_", " ")
+                        .toUpperCase()}
                     </div>
                   </div>
                 </div>
