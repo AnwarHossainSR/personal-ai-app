@@ -25,6 +25,7 @@ import type React from "react";
 import { useState, useTransition } from "react";
 import { createVehicleAction } from "../actions/vehicle-actions";
 import type { IVehicle } from "../models/vehicle";
+import { vehicleSchema } from "../validators";
 
 interface VehicleFormProps {
   initialData?: Partial<IVehicle>;
@@ -41,33 +42,27 @@ export function VehicleForm({
     name: initialData?.name || "",
     type: initialData?.type || "car",
     make: initialData?.make || "",
-    model: initialData?.model || "",
+    vehicleModel: initialData?.vehicleModel || "", // Changed from model to vehicleModel
     year: initialData?.year || new Date().getFullYear(),
     fuel_type: initialData?.fuel_type || "gasoline",
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setErrors({});
 
-    // Validation
-    if (!formData.name.trim()) {
-      setError("Vehicle name is required");
-      return;
-    }
-    if (!formData.make.trim()) {
-      setError("Vehicle make is required");
-      return;
-    }
-    if (!formData.model.trim()) {
-      setError("Vehicle model is required");
-      return;
-    }
-    if (formData.year < 1900 || formData.year > new Date().getFullYear() + 1) {
-      setError("Please enter a valid year");
+    // Validate form data with Zod schema
+    const result: any = vehicleSchema.safeParse(formData);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result?.error?.errors.forEach((error: any) => {
+        const field = error.path[0];
+        fieldErrors[field] = error.message;
+      });
+      setErrors(fieldErrors);
       return;
     }
 
@@ -78,29 +73,31 @@ export function VehicleForm({
           await onSubmit(formData);
         } else {
           // Otherwise, create new vehicle
-          const result = await createVehicleAction(formData);
+          const actionResult = await createVehicleAction(formData);
 
-          if (result.success) {
+          if (actionResult.success) {
             toast({
               title: "Success",
               description: `Vehicle "${formData.name}" has been ${isEditing ? "updated" : "created"} successfully.`,
             });
             router.push("/fuel-log/vehicles");
           } else {
-            setError(result.error || "Failed to save vehicle");
+            setErrors({
+              general: actionResult.error || "Failed to save vehicle",
+            });
           }
         }
       } catch (error) {
         console.error("Error saving vehicle:", error);
-        setError("An unexpected error occurred");
+        setErrors({ general: "An unexpected error occurred" });
       }
     });
   };
 
   const handleChange = (field: string) => (value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (error) setError("");
+    // Clear error for the field being edited
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   const vehicleTypeIcons = {
@@ -147,14 +144,14 @@ export function VehicleForm({
 
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
+            {errors.general && (
               <Alert
                 variant="destructive"
                 className="bg-red-50/50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
               >
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription className="font-medium">
-                  {error}
+                  {errors.general}
                 </AlertDescription>
               </Alert>
             )}
@@ -173,9 +170,14 @@ export function VehicleForm({
                   value={formData.name}
                   onChange={(e) => handleChange("name")(e.target.value)}
                   placeholder="e.g., My Honda Civic"
-                  className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base"
+                  className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base ${errors.name ? "border-red-500 dark:border-red-400" : ""}`}
                   required
                 />
+                {errors.name && (
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {errors.name}
+                  </p>
+                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -190,7 +192,9 @@ export function VehicleForm({
                     value={formData.type}
                     onValueChange={handleChange("type")}
                   >
-                    <SelectTrigger className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-base">
+                    <SelectTrigger
+                      className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-base ${errors.type ? "border-red-500 dark:border-red-400" : ""}`}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -220,6 +224,11 @@ export function VehicleForm({
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.type && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {errors.type}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -233,7 +242,9 @@ export function VehicleForm({
                     value={formData.fuel_type}
                     onValueChange={handleChange("fuel_type")}
                   >
-                    <SelectTrigger className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-base">
+                    <SelectTrigger
+                      className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 text-base ${errors.fuel_type ? "border-red-500 dark:border-red-400" : ""}`}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -269,6 +280,11 @@ export function VehicleForm({
                       </SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.fuel_type && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {errors.fuel_type}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -292,26 +308,38 @@ export function VehicleForm({
                     value={formData.make}
                     onChange={(e) => handleChange("make")(e.target.value)}
                     placeholder="e.g., Honda"
-                    className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base"
+                    className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base ${errors.make ? "border-red-500 dark:border-red-400" : ""}`}
                     required
                   />
+                  {errors.make && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {errors.make}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
                   <Label
-                    htmlFor="model"
+                    htmlFor="vehicleModel"
                     className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                   >
                     Model *
                   </Label>
                   <Input
-                    id="model"
-                    value={formData.model}
-                    onChange={(e) => handleChange("model")(e.target.value)}
+                    id="vehicleModel"
+                    value={formData.vehicleModel}
+                    onChange={(e) =>
+                      handleChange("vehicleModel")(e.target.value)
+                    }
                     placeholder="e.g., Civic"
-                    className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base"
+                    className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base ${errors.vehicleModel ? "border-red-500 dark:border-red-400" : ""}`}
                     required
                   />
+                  {errors.vehicleModel && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {errors.vehicleModel}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -324,23 +352,31 @@ export function VehicleForm({
                   <Input
                     id="year"
                     type="number"
-                    value={formData.year}
+                    value={formData.year || ""}
                     onChange={(e) =>
                       handleChange("year")(
-                        Number.parseInt(e.target.value) || currentYear
+                        e.target.value === ""
+                          ? ""
+                          : Number.parseInt(e.target.value) || currentYear
                       )
                     }
                     min="1900"
                     max={currentYear + 1}
-                    className="h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base"
+                    placeholder={currentYear.toString()}
+                    className={`h-12 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400 text-base ${errors.year ? "border-red-500 dark:border-red-400" : ""}`}
                     required
                   />
+                  {errors.year && (
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {errors.year}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Preview Card */}
-            {(formData.name || formData.make || formData.model) && (
+            {(formData.name || formData.make || formData.vehicleModel) && (
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
                   Preview
@@ -359,8 +395,8 @@ export function VehicleForm({
                         {formData.name || "Vehicle Name"}
                       </div>
                       <div className="text-sm text-slate-600 dark:text-slate-400">
-                        {formData.make && formData.model
-                          ? `${formData.make} ${formData.model} ${formData.year ? `• ${formData.year}` : ""}`
+                        {formData.make && formData.vehicleModel
+                          ? `${formData.make} ${formData.vehicleModel} ${formData.year ? `• ${formData.year}` : ""}`
                           : "Make Model • Year"}
                       </div>
                     </div>
