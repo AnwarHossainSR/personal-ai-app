@@ -20,13 +20,13 @@ export class VehicleService {
     };
   }
 
-  static async getAll(userId: string): Promise<IVehicle[]> {
+  static async getAll(userId: string, limit: number = 10): Promise<IVehicle[]> {
     try {
       await dbConnect();
       const vehicles = await Vehicle.find({ user_id: userId })
         .sort({ created_at: -1 })
+        .limit(limit)
         .lean();
-
       return vehicles.map(this.serializeVehicle);
     } catch (error: any) {
       console.error(`Error fetching vehicles for user ${userId}:`, error);

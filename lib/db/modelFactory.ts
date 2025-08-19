@@ -61,10 +61,8 @@ export function createModel<T extends BaseDocument>(
   try {
     // Return existing model if it exists, otherwise create new one
     if (mongoose.models && mongoose.models[name]) {
-      console.log("Model already exists:", name);
       return mongoose.models[name] as Model<T>;
     }
-    console.log("Creating new model:", name);
     return mongoose.model<T>(name, schema);
   } catch (error) {
     // If there's an error (like mongoose not initialized), just create the model
