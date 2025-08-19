@@ -13,7 +13,7 @@ export interface ModuleRoute {
   path: string;
   label: string;
   icon?: LucideIcon;
-  requireRole?: "user" | "system_administrator";
+  requireRole?: "user" | "administrator";
 }
 
 export interface ModuleMetadata {
@@ -23,7 +23,7 @@ export interface ModuleMetadata {
   icon: LucideIcon;
   version: string;
   enabled: boolean;
-  requiredRoles: ("user" | "system_administrator")[];
+  requiredRoles: ("user" | "administrator")[];
   routes: ModuleRoute[];
   featureFlags?: string[];
 }
@@ -37,7 +37,7 @@ export const moduleRegistry: ModuleMetadata[] = [
     icon: Fuel,
     version: "1.0.0",
     enabled: true,
-    requiredRoles: ["user", "system_administrator"],
+    requiredRoles: ["user", "administrator"],
     routes: [
       {
         path: "/fuel-log",
@@ -78,25 +78,25 @@ export const moduleRegistry: ModuleMetadata[] = [
     icon: Shield,
     version: "1.0.0",
     enabled: true,
-    requiredRoles: ["system_administrator"],
+    requiredRoles: ["administrator"],
     routes: [
       {
         path: "/admin",
         label: "Dashboard",
         icon: BarChart3,
-        requireRole: "system_administrator",
+        requireRole: "administrator",
       },
       {
         path: "/admin/users",
         label: "User Management",
         icon: Users,
-        requireRole: "system_administrator",
+        requireRole: "administrator",
       },
       {
         path: "/admin/modules",
         label: "Module Settings",
         icon: Settings,
-        requireRole: "system_administrator",
+        requireRole: "administrator",
       },
     ],
   },
@@ -112,7 +112,7 @@ export function getModuleById(id: string): ModuleMetadata | undefined {
 }
 
 export function getModulesForRole(
-  role: "user" | "system_administrator"
+  role: "user" | "administrator"
 ): ModuleMetadata[] {
   return getEnabledModules().filter((module) =>
     module.requiredRoles.includes(role)
@@ -120,7 +120,7 @@ export function getModulesForRole(
 }
 
 export function getRoutesForRole(
-  role: "user" | "system_administrator"
+  role: "user" | "administrator"
 ): ModuleRoute[] {
   const modules = getModulesForRole(role);
   return modules.flatMap((module) =>

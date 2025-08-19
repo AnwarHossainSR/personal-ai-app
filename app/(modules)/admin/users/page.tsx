@@ -5,7 +5,7 @@ import UsersManagementPage from "./users-management-client";
 
 export default async function UsersManagementServerPage() {
   const user = await getAuthUser();
-  if (!user || user.role !== "system_administrator") {
+  if (!user || user.role !== "administrator") {
     redirect("/dashboard");
   }
 

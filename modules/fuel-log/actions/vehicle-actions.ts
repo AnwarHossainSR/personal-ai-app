@@ -1,6 +1,7 @@
 "use server";
 
 import { createAction } from "@/lib/server/actionFactory";
+import { extractUserId } from "@/lib/utils";
 import { VehicleService } from "../services/vehicle-service";
 import { vehicleSchema } from "../validators";
 
@@ -11,9 +12,15 @@ export const createVehicleAction = createAction(
       return { success: false, error: "Authentication required" };
     }
 
+    const userId = extractUserId(context.user.id);
+
     try {
-      const vehicle = await VehicleService.create(input, context.user.id);
-      return { success: true, data: vehicle };
+      const vehicle = await VehicleService.create(input, userId);
+
+      // Ensure the vehicle data is properly serialized
+      const serializedVehicle = JSON.parse(JSON.stringify(vehicle));
+
+      return { success: true, data: serializedVehicle };
     } catch (error) {
       return {
         success: false,
@@ -32,15 +39,20 @@ export const updateVehicleAction = createAction(
       return { success: false, error: "Authentication required" };
     }
 
+    const userId = extractUserId(context.user.id);
+
     try {
       const { id, ...data } = input;
-      const vehicle = await VehicleService.update(id, context.user.id, data);
+      const vehicle = await VehicleService.update(id, userId, data);
 
       if (!vehicle) {
         return { success: false, error: "Vehicle not found" };
       }
 
-      return { success: true, data: vehicle };
+      // Ensure the vehicle data is properly serialized
+      const serializedVehicle = JSON.parse(JSON.stringify(vehicle));
+
+      return { success: true, data: serializedVehicle };
     } catch (error) {
       return {
         success: false,
@@ -59,8 +71,10 @@ export const deleteVehicleAction = createAction(
       return { success: false, error: "Authentication required" };
     }
 
+    const userId = extractUserId(context.user.id);
+
     try {
-      const success = await VehicleService.delete(input.id, context.user.id);
+      const success = await VehicleService.delete(input.id, userId);
 
       if (!success) {
         return { success: false, error: "Vehicle not found" };

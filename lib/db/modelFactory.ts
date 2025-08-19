@@ -23,6 +23,7 @@ export function createModel<T extends BaseDocument>(
   // Add common fields
   if (timestamps) {
     schema.add({
+      // @ts-expect-error
       created_at: { type: Date, default: Date.now },
       updated_at: { type: Date, default: Date.now },
     });
@@ -30,6 +31,7 @@ export function createModel<T extends BaseDocument>(
 
   if (softDelete) {
     schema.add({
+      // @ts-expect-error
       is_deleted: { type: Boolean, default: false },
     });
   }
@@ -50,10 +52,22 @@ export function createModel<T extends BaseDocument>(
   // Add soft delete query helpers
   if (softDelete) {
     schema.pre(/^find/, function () {
+      // @ts-expect-error
       this.where({ is_deleted: { $ne: true } });
     });
   }
 
-  // Return existing model if it exists, otherwise create new one
-  return mongoose.models[name] || mongoose.model<T>(name, schema);
+  // Check if mongoose is connected and models object exists
+  try {
+    // Return existing model if it exists, otherwise create new one
+    if (mongoose.models && mongoose.models[name]) {
+      console.log("Model already exists:", name);
+      return mongoose.models[name] as Model<T>;
+    }
+    console.log("Creating new model:", name);
+    return mongoose.model<T>(name, schema);
+  } catch (error) {
+    // If there's an error (like mongoose not initialized), just create the model
+    return mongoose.model<T>(name, schema);
+  }
 }
