@@ -152,10 +152,10 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto max-w-5xl">
+      <div className="container mx-auto max-w-7xl">
         <div className="space-y-8 p-4 sm:p-6">
           {/* Header */}
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
