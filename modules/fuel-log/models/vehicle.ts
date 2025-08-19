@@ -2,7 +2,7 @@ import { createModel } from "@/lib/db/modelFactory";
 import { HydratedDocument, Schema, Types } from "mongoose";
 
 export interface IVehicle {
-  id?: string; // String for client-side use
+  id: string; // String for client-side use
   user_id: string;
   name: string;
   type: "car" | "truck" | "motorcycle" | "other";

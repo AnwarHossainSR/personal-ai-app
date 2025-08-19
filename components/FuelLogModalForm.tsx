@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { IVehicle } from "@/modules/fuel-log/models/vehicle";
 import { AlertTriangle, Calculator, Fuel, Save } from "lucide-react";
 import type React from "react";
 import { useEffect, useState, useTransition } from "react";
@@ -28,20 +29,10 @@ interface FuelLogInput {
   notes?: string;
 }
 
-interface Vehicle {
-  _id: string;
-  name: string;
-  make: string;
-  model: string;
-  year: number;
-  type: string;
-  fuel_type: string;
-}
-
 interface FuelLogModalFormProps {
   isOpen: boolean;
   onClose: () => void;
-  vehicles: Vehicle[];
+  vehicles: IVehicle[];
   initialData?: Partial<FuelLogInput>;
   isEditing?: boolean;
   onSubmit?: (data: FuelLogInput) => Promise<void>;
@@ -141,7 +132,7 @@ export function FuelLogModalForm({
       setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-  const selectedVehicle = vehicles.find((v) => v._id === formData.vehicle_id);
+  const selectedVehicle = vehicles.find((v) => v.id === formData.vehicle_id);
   const estimatedMileage =
     formData.volume > 0 ? formData.odometer / formData.volume : 0;
 
@@ -195,14 +186,11 @@ export function FuelLogModalForm({
                   <SelectValue placeholder="Select a vehicle" />
                 </SelectTrigger>
                 <SelectContent>
-                  {vehicles.map((vehicle) => (
-                    <SelectItem key={vehicle._id} value={vehicle._id}>
+                  {vehicles.map((vehicle: IVehicle) => (
+                    <SelectItem key={vehicle.id} value={vehicle.id}>
                       <div className="flex items-center gap-2">
                         <span>
-                          {vehicle.type === "bike" ||
-                          vehicle.type === "motorcycle"
-                            ? "🏍️"
-                            : "🚗"}
+                          {vehicle.type === "motorcycle" ? "🏍️" : "🚗"}
                         </span>
                         <span>{vehicle.name}</span>
                       </div>
