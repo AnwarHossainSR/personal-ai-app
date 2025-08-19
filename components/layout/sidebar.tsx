@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 interface SidebarProps {
-  userRole: "user" | "system_administrator";
+  userRole: "user" | "administrator";
   className?: string;
 }
 

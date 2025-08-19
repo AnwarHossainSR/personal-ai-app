@@ -5,7 +5,7 @@ export interface IUser extends BaseDocument {
   email: string;
   full_name: string;
   avatar_url?: string;
-  role: "user" | "system_administrator";
+  role: "user" | "administrator";
   is_blocked: boolean;
   clerk_id: string;
 }

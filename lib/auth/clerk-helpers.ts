@@ -10,9 +10,7 @@ export async function getAuthUser(): Promise<ClerkUser | null> {
     return {
       userId,
       email: user.emailAddresses[0]?.emailAddress || "",
-      role:
-        (user.privateMetadata?.role as "user" | "system_administrator") ||
-        "user",
+      role: (user.privateMetadata?.role as "user" | "administrator") || "user",
     };
   } catch (error) {
     return null;

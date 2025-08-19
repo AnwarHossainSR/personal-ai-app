@@ -34,7 +34,7 @@ export function ModalVehicleForm({
     name: initialData?.name || "",
     type: initialData?.type || "car",
     make: initialData?.make || "",
-    model: initialData?.model || "",
+    vehicleModel: initialData?.vehicleModel || "",
     year: initialData?.year || new Date().getFullYear(),
     fuel_type: initialData?.fuel_type || "gasoline",
   });
@@ -237,8 +237,8 @@ export function ModalVehicleForm({
               </Label>
               <Input
                 id="model"
-                value={formData.model}
-                onChange={(e) => handleChange("model")(e.target.value)}
+                value={formData.vehicleModel}
+                onChange={(e) => handleChange("vehicleModel")(e.target.value)}
                 placeholder="e.g., Civic"
                 className="h-11 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600 focus:border-blue-500 dark:focus:border-blue-400"
                 required
@@ -269,7 +269,7 @@ export function ModalVehicleForm({
         </div>
 
         {/* Preview Card */}
-        {(formData.name || formData.make || formData.model) && (
+        {(formData.name || formData.make || formData.vehicleModel) && (
           <div className="space-y-2">
             <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200">
               Preview
@@ -288,8 +288,8 @@ export function ModalVehicleForm({
                     {formData.name || "Vehicle Name"}
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
-                    {formData.make && formData.model
-                      ? `${formData.make} ${formData.model} ${formData.year ? `• ${formData.year}` : ""}`
+                    {formData.make && formData.vehicleModel
+                      ? `${formData.make} ${formData.vehicleModel} ${formData.year ? `• ${formData.year}` : ""}`
                       : "Make Model • Year"}
                   </div>
                 </div>
