@@ -1,14 +1,13 @@
+// lib/dbConnect.ts
 declare global {
-  var _mongoose: any;
+  var _mongoose: { conn: any; promise: Promise<any> | null };
 }
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
-console.log("MONGODB_URI", MONGODB_URI);
-
 if (!MONGODB_URI) {
   throw new Error(
-    "Please define the MONGODB_URI environment variable inside .env.local"
+    "Please define the MONGODB_URI environment variable in .env.local"
   );
 }
 
@@ -20,19 +19,20 @@ if (!cached) {
 
 async function dbConnect() {
   if (cached.conn) {
+    console.log("Using cached MongoDB connection");
     return cached.conn;
   }
 
   if (!cached.promise) {
-    const mongoose = await import("mongoose"); // Dynamic import
+    const mongoose = await import("mongoose");
     const mongooseInstance = mongoose.default || mongoose;
 
     const opts = {
-      bufferCommands: false,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       family: 4,
+      // Remove bufferCommands: false to enable buffering
     };
 
     cached.promise = mongooseInstance
@@ -45,13 +45,12 @@ async function dbConnect() {
 
   try {
     cached.conn = await cached.promise;
-  } catch (e) {
+    return cached.conn;
+  } catch (error) {
     cached.promise = null;
-    console.error("MongoDB connection error:", e);
-    throw e;
+    console.error("MongoDB connection error:", error);
+    throw error;
   }
-
-  return cached.conn;
 }
 
 export default dbConnect;
