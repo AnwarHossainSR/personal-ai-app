@@ -58,7 +58,7 @@ const vehicleSchema = new Schema<VehicleDocument>(
     },
   },
   {
-    timestamps: true, // Automatically adds created_at and updated_at
+    timestamps: false,
     versionKey: false, // Disable __v field
   }
 );

@@ -307,7 +307,7 @@ export default function VehiclesPage() {
                   key={vehicle.id}
                   className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm hover:shadow-xl transition-all duration-300 border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-800/80 overflow-hidden"
                 >
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-3 relative">
                     {/* Vehicle Icon and Info */}
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-3 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50 flex-shrink-0">
@@ -317,9 +317,9 @@ export default function VehiclesPage() {
                           ] || "🚙"}
                         </div>
                       </div>
-                      <div className="min-w-0 flex-1 overflow-hidden">
+                      <div className="min-w-0 flex-1 overflow-hidden ">
                         <CardTitle
-                          className="text-lg truncate"
+                          className="text-lg truncate max-w-[calc(100%-2rem)] space-y-2"
                           title={vehicle.name}
                         >
                           {vehicle.name}
@@ -331,7 +331,7 @@ export default function VehiclesPage() {
                     </div>
 
                     {/* Action Buttons Row */}
-                    <div className="flex gap-2 justify-end">
+                    <div className="flex gap-2 absolute justify-end top-15 right-3">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -353,7 +353,7 @@ export default function VehiclesPage() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-2 mt-5">
                     {/* Vehicle Details */}
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
@@ -361,7 +361,7 @@ export default function VehiclesPage() {
                           Make & Model
                         </span>
                         <span
-                          className="text-sm font-medium text-right truncate max-w-[50%]"
+                          className="text-sm font-medium text-right truncate max-w-[90%]"
                           title={`${vehicle.make} ${vehicle.vehicleModel}`}
                         >
                           {vehicle.make} {vehicle.vehicleModel}
