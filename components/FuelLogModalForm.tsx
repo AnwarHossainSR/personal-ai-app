@@ -274,7 +274,7 @@ export function FuelLogModalForm({
                   htmlFor="unit_price"
                   className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
-                  Price per Liter (₹)
+                  Price per Liter (৳)
                 </Label>
                 <Input
                   id="unit_price"
@@ -298,7 +298,7 @@ export function FuelLogModalForm({
                   htmlFor="total_cost"
                   className="text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
-                  Total Cost (₹)
+                  Total Cost (৳)
                 </Label>
                 <div className="flex items-center gap-2">
                   <Calculator className="h-3 w-3 text-slate-500" />
@@ -331,8 +331,8 @@ export function FuelLogModalForm({
               />
               {autoCalculate && (
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Automatically calculated: {formData.volume} L × ₹
-                  {formData.unit_price} = ₹
+                  Automatically calculated: {formData.volume} L × ৳
+                  {formData.unit_price} = ৳
                   {(formData.volume * formData.unit_price).toFixed(2)}
                 </p>
               )}
@@ -422,7 +422,7 @@ export function FuelLogModalForm({
                         Cost
                       </p>
                       <p className="text-slate-900 dark:text-slate-100">
-                        ₹{formData.total_cost.toLocaleString()}
+                        ৳{formData.total_cost.toLocaleString()}
                       </p>
                     </div>
                     <div>
@@ -430,7 +430,7 @@ export function FuelLogModalForm({
                         Price/L
                       </p>
                       <p className="text-slate-900 dark:text-slate-100">
-                        ₹{formData.unit_price.toFixed(2)}
+                        ৳{formData.unit_price.toFixed(2)}
                       </p>
                     </div>
                   </div>

@@ -291,7 +291,7 @@ export default function SettingsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="INR">₹ Indian Rupee</SelectItem>
+                      <SelectItem value="INR">৳ Indian Rupee</SelectItem>
                       <SelectItem value="USD">$ US Dollar</SelectItem>
                       <SelectItem value="EUR">€ Euro</SelectItem>
                       <SelectItem value="GBP">£ British Pound</SelectItem>

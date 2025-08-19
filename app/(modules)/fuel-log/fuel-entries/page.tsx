@@ -354,7 +354,7 @@ export default function FuelLogPage() {
                         Total Spent
                       </p>
                       <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                        ₹{stats.totalCost.toLocaleString()}
+                        ৳{stats.totalCost.toLocaleString()}
                       </p>
                     </div>
                     <div className="p-3 bg-red-200/50 dark:bg-red-800/30 rounded-full">
@@ -406,7 +406,7 @@ export default function FuelLogPage() {
                         Avg Price/L
                       </p>
                       <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                        ₹{stats.averagePrice.toFixed(2)}
+                        ৳{stats.averagePrice.toFixed(2)}
                       </p>
                     </div>
                     <div className="p-3 bg-blue-200/50 dark:bg-blue-800/30 rounded-full">
@@ -429,7 +429,7 @@ export default function FuelLogPage() {
                         Cost per KM
                       </p>
                       <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                        ₹
+                        ৳
                         {stats.costPerKm > 0
                           ? stats.costPerKm.toFixed(2)
                           : "N/A"}
@@ -515,7 +515,7 @@ export default function FuelLogPage() {
                       </Pie>
                       <Tooltip
                         formatter={(value: number) => [
-                          `₹${value.toLocaleString()}`,
+                          `৳${value.toLocaleString()}`,
                           "Amount",
                         ]}
                       />
@@ -531,7 +531,7 @@ export default function FuelLogPage() {
                       />
                       <span className="text-sm font-medium">{item.name}</span>
                       <span className="text-sm text-muted-foreground ml-auto">
-                        ₹{item.value.toLocaleString()}
+                        ৳{item.value.toLocaleString()}
                       </span>
                     </div>
                   ))}
@@ -670,7 +670,7 @@ export default function FuelLogPage() {
                                     Price/L
                                   </p>
                                   <p className="font-medium">
-                                    ₹{log.unit_price.toFixed(2)}
+                                    ৳{log.unit_price.toFixed(2)}
                                   </p>
                                 </div>
                                 <div>
@@ -678,7 +678,7 @@ export default function FuelLogPage() {
                                     Total Cost
                                   </p>
                                   <p className="font-medium text-red-600 dark:text-red-400">
-                                    ₹{log.total_cost.toLocaleString()}
+                                    ৳{log.total_cost.toLocaleString()}
                                   </p>
                                 </div>
                               </div>
@@ -781,7 +781,7 @@ export default function FuelLogPage() {
                           Total Cost
                         </p>
                         <p className="text-lg font-bold text-red-600 dark:text-red-400">
-                          ₹{stats?.totalCost.toLocaleString() || 0}
+                          ৳{stats?.totalCost.toLocaleString() || 0}
                         </p>
                       </div>
                     </div>
@@ -847,7 +847,7 @@ export default function FuelLogPage() {
                         Monthly Average:
                       </span>
                       <p className="font-medium">
-                        ₹{stats.monthlyAverage.toLocaleString()}
+                        ৳{stats.monthlyAverage.toLocaleString()}
                       </p>
                     </div>
                     <div>
@@ -855,7 +855,7 @@ export default function FuelLogPage() {
                         Cost per Fill-up:
                       </span>
                       <p className="font-medium">
-                        ₹
+                        ৳
                         {stats.totalFillUps > 0
                           ? (
                               stats.totalCost / stats.totalFillUps

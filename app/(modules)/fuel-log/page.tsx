@@ -85,7 +85,7 @@ export default function FuelLogDashboard() {
             vehicle: "Honda Civic",
             type: "fuel",
             date: "2024-01-15",
-            amount: 3200, // ₹3200
+            amount: 3200, // ৳3200
             volume: 40, // 40L
             odometer: 45200,
             details: "40L, Shell Petrol Station",
@@ -96,7 +96,7 @@ export default function FuelLogDashboard() {
             vehicle: "Royal Enfield",
             type: "fuel",
             date: "2024-01-12",
-            amount: 800, // ₹800
+            amount: 800, // ৳800
             volume: 10, // 10L
             odometer: 12800,
             details: "10L, HP Petrol Pump",
@@ -107,15 +107,15 @@ export default function FuelLogDashboard() {
             vehicle: "Honda Civic",
             type: "service",
             date: "2024-01-10",
-            amount: 6500, // ₹6500
+            amount: 6500, // ৳6500
             details: "Engine oil change + filter",
           },
         ];
 
         setStats({
           totalVehicles: 2,
-          totalFuelCost: 4000, // ₹4000
-          totalServiceCost: 6500, // ₹6500
+          totalFuelCost: 4000, // ৳4000
+          totalServiceCost: 6500, // ৳6500
           totalVolume: 50, // 50L
           totalDistance: 1250, // 1250 KM
           averageMileage: 18.2, // km/L
@@ -204,7 +204,7 @@ export default function FuelLogDashboard() {
         />
         <StatCard
           title="Fuel Cost"
-          value={`₹${stats.totalFuelCost.toLocaleString()}`}
+          value={`৳${stats.totalFuelCost.toLocaleString()}`}
           description="Total fuel expenses"
           icon={DollarSign}
           trend={{
@@ -238,7 +238,7 @@ export default function FuelLogDashboard() {
                   formatter={(value, name) => [
                     name === "mileage"
                       ? `${Number(value).toFixed(1)} km/L`
-                      : `₹${Number(value).toLocaleString()}`,
+                      : `৳${Number(value).toLocaleString()}`,
                     name === "mileage" ? "Mileage" : "Fuel Cost",
                   ]}
                 />
@@ -275,7 +275,7 @@ export default function FuelLogDashboard() {
                   formatter={(value, name) => [
                     name === "distance"
                       ? `${Number(value)} KM`
-                      : `₹${Number(value).toLocaleString()}`,
+                      : `৳${Number(value).toLocaleString()}`,
                     name === "distance" ? "Distance" : "Fuel Cost",
                   ]}
                 />
@@ -346,7 +346,7 @@ export default function FuelLogDashboard() {
                   </div>
                   <div className="text-right">
                     <p className="font-medium">
-                      ₹{entry.amount.toLocaleString()}
+                      ৳{entry.amount.toLocaleString()}
                     </p>
                     {entry.mileage && (
                       <p className="text-sm text-green-600 dark:text-green-400 font-medium">
