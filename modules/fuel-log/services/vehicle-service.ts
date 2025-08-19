@@ -4,10 +4,30 @@ import { ServiceLog } from "../models/service-log";
 import { Vehicle, type IVehicle } from "../models/vehicle";
 
 export class VehicleService {
+  // Helper method to serialize MongoDB documents
+  private static serializeVehicle(vehicle: any): IVehicle {
+    return {
+      id: vehicle._id?.toString() || vehicle.id?.toString(),
+      user_id: vehicle.user_id,
+      name: vehicle.name,
+      type: vehicle.type,
+      make: vehicle.make,
+      vehicleModel: vehicle.vehicleModel,
+      year: vehicle.year,
+      fuel_type: vehicle.fuel_type,
+      created_at: vehicle.created_at || vehicle.createdAt,
+      updated_at: vehicle.updated_at || vehicle.updatedAt,
+    };
+  }
+
   static async getAll(userId: string): Promise<IVehicle[]> {
     try {
       await dbConnect();
-      return Vehicle.find({ user_id: userId }).sort({ created_at: -1 }).lean();
+      const vehicles = await Vehicle.find({ user_id: userId })
+        .sort({ created_at: -1 })
+        .lean();
+
+      return vehicles.map(this.serializeVehicle);
     } catch (error: any) {
       console.error(`Error fetching vehicles for user ${userId}:`, error);
       throw new Error(`Failed to fetch vehicles: ${error.message}`);
@@ -17,7 +37,12 @@ export class VehicleService {
   static async getById(id: string, userId: string): Promise<IVehicle | null> {
     try {
       await dbConnect();
-      return Vehicle.findOne({ _id: id, user_id: userId }).lean(); // Query uses _id
+      const vehicle = await Vehicle.findOne({
+        _id: id,
+        user_id: userId,
+      }).lean();
+
+      return vehicle ? this.serializeVehicle(vehicle) : null;
     } catch (error: any) {
       console.error(`Error fetching vehicle ${id} for user ${userId}:`, error);
       throw new Error(`Failed to fetch vehicle: ${error.message}`);
@@ -31,7 +56,9 @@ export class VehicleService {
     try {
       await dbConnect();
       const vehicle = new Vehicle({ ...data, user_id: userId });
-      return vehicle.save().then((doc) => doc.toObject());
+      const saved = await vehicle.save();
+
+      return this.serializeVehicle(saved.toObject());
     } catch (error: any) {
       console.error(`Error creating vehicle for user ${userId}:`, error);
       throw new Error(`Failed to create vehicle: ${error.message}`);
@@ -45,11 +72,13 @@ export class VehicleService {
   ): Promise<IVehicle | null> {
     try {
       await dbConnect();
-      return Vehicle.findOneAndUpdate(
-        { _id: id, user_id: userId }, // Query uses _id
+      const vehicle = await Vehicle.findOneAndUpdate(
+        { _id: id, user_id: userId },
         data,
         { new: true }
       ).lean();
+
+      return vehicle ? this.serializeVehicle(vehicle) : null;
     } catch (error: any) {
       console.error(`Error updating vehicle ${id} for user ${userId}:`, error);
       throw new Error(`Failed to update vehicle: ${error.message}`);
@@ -75,7 +104,7 @@ export class VehicleService {
         );
       }
 
-      const result = await Vehicle.deleteOne({ _id: id, user_id: userId }); // Query uses _id
+      const result = await Vehicle.deleteOne({ _id: id, user_id: userId });
       return result.deletedCount > 0;
     } catch (error: any) {
       console.error(`Error deleting vehicle ${id} for user ${userId}:`, error);

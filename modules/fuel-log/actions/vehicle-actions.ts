@@ -13,7 +13,11 @@ export const createVehicleAction = createAction(
 
     try {
       const vehicle = await VehicleService.create(input, context.user.id);
-      return { success: true, data: vehicle };
+
+      // Ensure the vehicle data is properly serialized
+      const serializedVehicle = JSON.parse(JSON.stringify(vehicle));
+
+      return { success: true, data: serializedVehicle };
     } catch (error) {
       return {
         success: false,
@@ -40,7 +44,10 @@ export const updateVehicleAction = createAction(
         return { success: false, error: "Vehicle not found" };
       }
 
-      return { success: true, data: vehicle };
+      // Ensure the vehicle data is properly serialized
+      const serializedVehicle = JSON.parse(JSON.stringify(vehicle));
+
+      return { success: true, data: serializedVehicle };
     } catch (error) {
       return {
         success: false,
