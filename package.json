@@ -60,7 +60,7 @@
     "happy-dom": "18.0.1",
     "input-otp": "1.4.2",
     "jsdom": "26.1.0",
-    "jspdf": "latest",
+    "jspdf": "3.0.1",
     "kerberos": "2.2.2",
     "lucide-react": "^0.454.0",
     "mongoose": "8.17.2",
@@ -76,12 +76,12 @@
     "recharts": "3.1.2",
     "snappy": "7.3.2",
     "socks": "2.8.7",
-    "sonner": "latest",
-    "tailwind-merge": "^2.5.5",
+    "sonner": "2.0.7",
+    "tailwind-merge": "^3.3.1",
     "tailwindcss": "4.1.12",
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.3.7",
-    "vaul": "latest",
+    "vaul": "1.1.2",
     "vite": "5.3.6",
     "zod": "4.0.17",
     "zustand": "5.0.7"
@@ -106,6 +106,5 @@
     "prettier": "3.6.2",
     "typescript": "^5",
     "vitest": "3.2.4"
-  },
-  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
+  }
 }
