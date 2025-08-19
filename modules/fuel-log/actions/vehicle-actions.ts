@@ -11,6 +11,8 @@ export const createVehicleAction = createAction(
       return { success: false, error: "Authentication required" };
     }
 
+    console.log("context.user", context.user);
+
     try {
       const vehicle = await VehicleService.create(input, context.user.id);
 

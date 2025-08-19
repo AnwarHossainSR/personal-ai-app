@@ -1,13 +1,13 @@
-import { Schema } from "mongoose"
-import { createModel, type BaseDocument } from "@/lib/db/modelFactory"
+import { createModel, type BaseDocument } from "@/lib/db/modelFactory";
+import { Schema } from "mongoose";
 
 export interface IUser extends BaseDocument {
-  email: string
-  full_name: string
-  avatar_url?: string
-  role: "user" | "admin"
-  is_blocked: boolean
-  clerk_id: string
+  email: string;
+  full_name: string;
+  avatar_url?: string;
+  role: "user" | "system_administrator";
+  is_blocked: boolean;
+  clerk_id: string;
 }
 
 const userSchema = new Schema<IUser>({
@@ -41,6 +41,6 @@ const userSchema = new Schema<IUser>({
     required: true,
     unique: true,
   },
-})
+});
 
-export const User = createModel<IUser>("User", userSchema)
+export const User = createModel<IUser>("User", userSchema);
