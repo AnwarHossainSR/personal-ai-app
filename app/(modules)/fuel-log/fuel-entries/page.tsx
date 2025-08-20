@@ -685,21 +685,21 @@ export default function FuelLogPage() {
                 <div className="grid md:grid-cols-3 gap-4 text-sm">
                   <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
                     <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">
-                      Excellent Efficiency (20+ km/L)
+                      Excellent Efficiency (40+ km/L)
                     </h4>
                     <p className="text-muted-foreground">
-                      {chartData.filter((entry) => entry.mileage >= 20).length}{" "}
+                      {chartData.filter((entry) => entry.mileage >= 40).length}{" "}
                       entries with top performance
                     </p>
                   </div>
                   <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
                     <h4 className="font-semibold mb-2 text-yellow-600 dark:text-yellow-400">
-                      Good Range (15-20 km/L)
+                      Good Range (33-40 km/L)
                     </h4>
                     <p className="text-muted-foreground">
                       {
                         chartData.filter(
-                          (entry) => entry.mileage >= 15 && entry.mileage < 20
+                          (entry) => entry.mileage >= 33 && entry.mileage < 40
                         ).length
                       }{" "}
                       entries with good efficiency
@@ -712,7 +712,7 @@ export default function FuelLogPage() {
                     <p className="text-muted-foreground">
                       {
                         chartData.filter(
-                          (entry) => entry.mileage > 0 && entry.mileage < 15
+                          (entry) => entry.mileage > 0 && entry.mileage < 33
                         ).length
                       }{" "}
                       entries need attention

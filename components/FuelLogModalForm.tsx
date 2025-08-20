@@ -386,7 +386,7 @@ export function FuelLogModalForm({
                   className="h-11 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600"
                   min="0.1"
                   step="0.1"
-                  max="200"
+                  max="50"
                   disabled={isPending}
                   required
                 />
