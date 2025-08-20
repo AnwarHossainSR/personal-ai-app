@@ -240,7 +240,7 @@ export default function FuelLogPage() {
         <div className="container mx-auto max-w-7xl">
           <div className="space-y-8 p-4 sm:p-6">
             {/* Header Skeleton */}
-            <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-6 sm:p-8">
+            <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-6 sm:p-8">
               <Skeleton className="h-10 w-64 mb-2 bg-white/20" />
               <Skeleton className="h-6 w-96 bg-white/10" />
             </div>
@@ -299,13 +299,13 @@ export default function FuelLogPage() {
           )}
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 text-slate-700">
+          <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-whit">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2">
                   Fuel Entries
                 </h1>
-                <p className="text-slate-700 text-base sm:text-lg">
+                <p className="text-white text-base sm:text-lg">
                   Manage and analyze all your fuel consumption records
                 </p>
               </div>
