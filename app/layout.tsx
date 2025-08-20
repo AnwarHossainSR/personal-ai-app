@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import type React from "react";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -41,16 +42,17 @@ export default function RootLayout({
       >
         <head>
           <style>{`
-html {
-  font-family: ${inter.style.fontFamily};
-  --font-sans: ${inter.style.fontFamily};
-  --font-heading: ${montserrat.style.fontFamily};
-}
+              html {
+                font-family: ${inter.style.fontFamily};
+                --font-sans: ${inter.style.fontFamily};
+                --font-heading: ${montserrat.style.fontFamily};
+              }
           `}</style>
         </head>
         <body className="font-sans antialiased">
           <ThemeProvider defaultTheme="dark" defaultThemeId="default">
             <QueryProvider>{children}</QueryProvider>
+            <Toaster position="top-right" richColors />
           </ThemeProvider>
         </body>
       </html>

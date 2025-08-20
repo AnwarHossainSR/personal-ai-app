@@ -10,7 +10,7 @@ import {
   type UpdateFuelLogInput,
 } from "@/modules/fuel-log/actions/fuel-log-actions";
 import type { IFuelLog } from "@/modules/fuel-log/models/fuel-log";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export interface FuelLog {
@@ -54,9 +54,43 @@ export function useFuelLogs() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<UseFuelLogsFilters>({});
 
+  // Use ref to prevent race conditions
+  const loadingRef = useRef(false);
+
+  const convertIFuelLogToFuelLog = (log: IFuelLog): FuelLog => ({
+    id: log.id,
+    user_id: log.user_id,
+    vehicle_id: log.vehicle_id,
+    date:
+      log.date instanceof Date
+        ? log.date.toISOString().split("T")[0]
+        : String(log.date),
+    odometer: Number(log.odometer) || 0,
+    volume: Number(log.volume) || 0,
+    unit_price: Number(log.unit_price) || 0,
+    total_cost: Number(log.total_cost) || 0,
+    station: log.station || undefined,
+    notes: log.notes || undefined,
+    created_at:
+      log.created_at instanceof Date
+        ? log.created_at.toISOString()
+        : String(log.created_at),
+    updated_at:
+      log.updated_at instanceof Date
+        ? log.updated_at.toISOString()
+        : String(log.updated_at),
+  });
+
   const loadFuelLogs = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
     setLoading(true);
+
     try {
+      console.log("🚀 Loading fuel logs with filters:", filters);
+
       const result = await getFuelLogsAction({
         vehicleId: filters.vehicle_id,
         startDate: filters.start_date,
@@ -64,39 +98,66 @@ export function useFuelLogs() {
         station: filters.station,
       });
 
-      if (result.success) {
-        // Convert IFuelLog[] to FuelLog[]
-        const convertedLogs: FuelLog[] = result.data.map((log: IFuelLog) => ({
-          id: log.id,
-          user_id: log.user_id,
-          vehicle_id: log.vehicle_id,
-          date: log.date.toISOString().split("T")[0], // Convert Date to string
-          odometer: log.odometer,
-          volume: log.volume,
-          unit_price: log.unit_price,
-          total_cost: log.total_cost,
-          station: log.station,
-          notes: log.notes,
-          created_at: log.created_at.toISOString(),
-          updated_at: log.updated_at.toISOString(),
-        }));
-        setFuelLogs(convertedLogs);
+      console.log("📊 getFuelLogsAction result:", {
+        success: result.success,
+        dataType: typeof result.data,
+        dataLength: Array.isArray(result.data)
+          ? result.data.length
+          : "not array",
+        error: result.error,
+      });
+
+      if (result.success && result.data) {
+        // Ensure result.data is an array
+        const dataArray = Array.isArray(result.data) ? result.data : [];
+
+        if (dataArray.length === 0) {
+          console.log("⚠️ No fuel logs found");
+          setFuelLogs([]);
+        } else {
+          console.log("✅ Converting fuel logs, count:", dataArray.length);
+
+          // Convert with error handling for each log
+          const convertedLogs: FuelLog[] = dataArray
+            .map((log: IFuelLog) => {
+              try {
+                return convertIFuelLogToFuelLog(log);
+              } catch (error) {
+                console.error("❌ Error converting fuel log:", log, error);
+                return null;
+              }
+            })
+            .filter((log): log is FuelLog => log !== null);
+
+          console.log("🎯 Converted logs:", convertedLogs.length);
+          setFuelLogs(convertedLogs);
+        }
       } else {
+        console.error("❌ Failed to load fuel logs:", result.error);
         toast.error(result.error || "Failed to load fuel logs");
         setFuelLogs([]);
       }
     } catch (error) {
-      console.error("Error loading fuel logs:", error);
+      console.error("💥 Exception loading fuel logs:", error);
       toast.error("Failed to load fuel logs");
       setFuelLogs([]);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, [filters]);
 
   const loadStats = useCallback(async () => {
     try {
+      console.log("📈 Loading fuel log stats...");
       const result: any = await getFuelLogStatsAction({});
+
+      console.log("📈 Stats result:", {
+        success: result.success,
+        data: result.data,
+        error: result.error,
+      });
+
       if (result.success) {
         setStats(result.data);
       } else {
@@ -110,6 +171,7 @@ export function useFuelLogs() {
   }, []);
 
   useEffect(() => {
+    console.log("🔄 useEffect triggered, filters changed:", filters);
     loadFuelLogs();
     loadStats();
   }, [loadFuelLogs, loadStats]);
@@ -119,8 +181,7 @@ export function useFuelLogs() {
       const result = await createFuelLogAction(data);
       if (result.success) {
         toast.success("Fuel log created successfully");
-        await loadFuelLogs();
-        await loadStats();
+        await Promise.all([loadFuelLogs(), loadStats()]);
         return result.data;
       } else {
         toast.error(result.error || "Failed to create fuel log");
@@ -137,8 +198,7 @@ export function useFuelLogs() {
       const result = await updateFuelLogAction(data);
       if (result.success) {
         toast.success("Fuel log updated successfully");
-        await loadFuelLogs();
-        await loadStats();
+        await Promise.all([loadFuelLogs(), loadStats()]);
         return result.data;
       } else {
         toast.error(result.error || "Failed to update fuel log");
@@ -155,8 +215,7 @@ export function useFuelLogs() {
       const result = await deleteFuelLogAction({ id });
       if (result.success) {
         toast.success("Fuel log deleted successfully");
-        await loadFuelLogs();
-        await loadStats();
+        await Promise.all([loadFuelLogs(), loadStats()]);
       } else {
         toast.error(result.error || "Failed to delete fuel log");
         throw new Error(result.error);
@@ -168,12 +227,16 @@ export function useFuelLogs() {
   };
 
   const updateFilters = (newFilters: UseFuelLogsFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
+    console.log("🎯 Updating filters:", newFilters);
+    setFilters((prev) => {
+      const updated = { ...prev, ...newFilters };
+      console.log("🎯 New filters state:", updated);
+      return updated;
+    });
   };
 
   const refreshData = async () => {
-    await loadFuelLogs();
-    await loadStats();
+    await Promise.all([loadFuelLogs(), loadStats()]);
   };
 
   return {
