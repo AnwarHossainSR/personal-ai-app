@@ -14,7 +14,6 @@ export function useVehicles() {
       setError(null);
 
       const response = await apiClient.get<IVehicle[]>("/vehicles");
-      console.log("response", response);
       setVehicles(response);
     } catch (err) {
       const errorMessage =

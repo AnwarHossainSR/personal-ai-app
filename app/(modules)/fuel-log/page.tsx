@@ -15,208 +15,245 @@ import {
   DollarSign,
   Fuel,
   Gauge,
+  MapPin,
+  PieChart,
   Plus,
-  TrendingUp,
-  Wrench,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   Bar,
   CartesianGrid,
+  Cell,
   ComposedChart,
   Line,
   LineChart,
+  Pie,
+  PieChart as RechartsPieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
+// Import your actual hooks here
+import { useFuelLogs } from "@/hooks/use-fuel-logs";
+import { useVehicles } from "@/hooks/use-vehicles";
+
 export default function FuelLogDashboard() {
   const { user, isLoaded } = useUser();
-  const [stats, setStats] = useState<any>({
-    totalVehicles: 0,
-    totalFuelCost: 0,
-    totalServiceCost: 0,
-    totalVolume: 0,
-    totalDistance: 0,
-    averageMileage: 0,
-    bestMileage: 0,
-    currentMileage: 0,
-    recentEntries: [],
-  });
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Calculate mileage from fuel log entries
-  const calculateMileage = (entries: any[]) => {
-    if (entries.length < 2) return 0;
+  // Use your actual hooks instead of mock data
+  const { vehicles, loading: vehiclesLoading } = useVehicles();
+  const { fuelLogs, loading: logsLoading, stats } = useFuelLogs();
 
-    // Sort by date and calculate mileage between entries
-    const sortedEntries = entries.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    let totalMileage = 0;
-    let validEntries = 0;
+  const loading = vehiclesLoading || logsLoading;
 
-    for (let i = 1; i < sortedEntries.length; i++) {
-      const current = sortedEntries[i];
-      const previous = sortedEntries[i - 1];
-      const distance = current.odometer - previous.odometer;
-
-      if (distance > 0 && current.volume > 0) {
-        const mileage = distance / current.volume; // km/L
-        totalMileage += mileage;
-        validEntries++;
+  // Calculate recent entries and enhanced stats
+  const { recentEntries, chartData, vehicleDistribution, mileageTrend } =
+    useMemo(() => {
+      if (!fuelLogs || !Array.isArray(fuelLogs) || !vehicles) {
+        return {
+          recentEntries: [],
+          chartData: [],
+          vehicleDistribution: [],
+          mileageTrend: [],
+        };
       }
-    }
 
-    return validEntries > 0 ? totalMileage / validEntries : 0;
-  };
+      // Get recent entries (last 5)
+      const recent = fuelLogs
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5)
+        .map((log) => {
+          const vehicle = vehicles.find((v) => v.id === log.vehicle_id);
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      // Simulate API call with mileage-focused data
-      setTimeout(() => {
-        const mockEntries = [
-          {
-            id: 1,
-            vehicle: "Honda Civic",
+          // Calculate mileage for this entry
+          const previousLog = fuelLogs
+            .filter(
+              (l) =>
+                l.vehicle_id === log.vehicle_id &&
+                new Date(l.date) < new Date(log.date)
+            )
+            .sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+            )[0];
+
+          let mileage = 0;
+          if (previousLog) {
+            const distance = log.odometer - previousLog.odometer;
+            if (distance > 0 && log.volume > 0) {
+              mileage = distance / log.volume;
+            }
+          }
+
+          return {
+            id: log.id,
+            vehicle: vehicle?.name || "Unknown Vehicle",
             type: "fuel",
-            date: "2024-01-15",
-            amount: 3200, // ৳3200
-            volume: 40, // 40L
-            odometer: 45200,
-            details: "40L, Shell Petrol Station",
-            mileage: 12.5, // km/L
-          },
-          {
-            id: 2,
-            vehicle: "Royal Enfield",
-            type: "fuel",
-            date: "2024-01-12",
-            amount: 800, // ৳800
-            volume: 10, // 10L
-            odometer: 12800,
-            details: "10L, HP Petrol Pump",
-            mileage: 35.0, // km/L
-          },
-          {
-            id: 3,
-            vehicle: "Honda Civic",
-            type: "service",
-            date: "2024-01-10",
-            amount: 6500, // ৳6500
-            details: "Engine oil change + filter",
-          },
-        ];
-
-        setStats({
-          totalVehicles: 2,
-          totalFuelCost: 4000, // ৳4000
-          totalServiceCost: 6500, // ৳6500
-          totalVolume: 50, // 50L
-          totalDistance: 1250, // 1250 KM
-          averageMileage: 18.2, // km/L
-          bestMileage: 35.0, // km/L (bike)
-          currentMileage: 12.5, // km/L (recent)
-          recentEntries: mockEntries,
+            date: log.date,
+            amount: log.total_cost,
+            volume: log.volume,
+            odometer: log.odometer,
+            details: `${log.volume}L, ${log.station || "Unknown Station"}`,
+            mileage: mileage,
+            station: log.station,
+            notes: log.notes,
+          };
         });
 
-        // Mileage trend data
-        setChartData([
-          { month: "Jan", mileage: 16.8, fuelCost: 2800, distance: 890 },
-          { month: "Feb", mileage: 17.2, fuelCost: 3200, distance: 980 },
-          { month: "Mar", mileage: 18.5, fuelCost: 3100, distance: 1050 },
-          { month: "Apr", mileage: 17.9, fuelCost: 3400, distance: 1120 },
-          { month: "May", mileage: 18.8, fuelCost: 3300, distance: 1200 },
-          { month: "Jun", mileage: 18.2, fuelCost: 3500, distance: 1250 },
-        ]);
-        setLoading(false);
-      }, 1000);
-    }
-  }, [isLoaded, user]);
+      // Prepare monthly chart data for trends
+      const monthlyData: any = {};
+      fuelLogs.forEach((log) => {
+        const monthKey = new Date(log.date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+        });
+
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = {
+            month: monthKey,
+            totalCost: 0,
+            totalVolume: 0,
+            totalDistance: 0,
+            entries: [],
+          };
+        }
+
+        monthlyData[monthKey].totalCost += log.total_cost;
+        monthlyData[monthKey].totalVolume += log.volume;
+        monthlyData[monthKey].entries.push(log);
+      });
+
+      const chartDataCalc = Object.values(monthlyData)
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.month).getTime() - new Date(b.month).getTime()
+        )
+        .slice(-6) // Last 6 months
+        .map((data: any) => {
+          // Calculate average mileage for the month
+          let totalMileage = 0;
+          let mileageEntries = 0;
+
+          data.entries.forEach((log: any) => {
+            const previousLog = fuelLogs
+              .filter(
+                (l) =>
+                  l.vehicle_id === log.vehicle_id &&
+                  new Date(l.date) < new Date(log.date)
+              )
+              .sort(
+                (a, b) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+              )[0];
+
+            if (previousLog) {
+              const distance = log.odometer - previousLog.odometer;
+              if (distance > 0 && log.volume > 0) {
+                totalMileage += distance / log.volume;
+                mileageEntries++;
+              }
+            }
+          });
+
+          return {
+            ...data,
+            mileage: mileageEntries > 0 ? totalMileage / mileageEntries : 0,
+            fuelCost: data.totalCost,
+            distance: data.totalDistance,
+          };
+        });
+
+      // Vehicle distribution for pie chart
+      const vehicleDistCalc = vehicles
+        .map((vehicle) => {
+          const vehicleLogs = fuelLogs.filter(
+            (log) => log.vehicle_id === vehicle.id
+          );
+          const totalCost = vehicleLogs.reduce(
+            (sum, log) => sum + log.total_cost,
+            0
+          );
+          return {
+            name: vehicle.name,
+            value: totalCost,
+            color: `hsl(${Math.abs(vehicle?.id?.charCodeAt(0) * 123) % 360}, 70%, 50%)`,
+          };
+        })
+        .filter((item) => item.value > 0);
+
+      return {
+        recentEntries: recent,
+        chartData: chartDataCalc,
+        vehicleDistribution: vehicleDistCalc,
+        mileageTrend: chartDataCalc,
+      };
+    }, [fuelLogs, vehicles]);
 
   if (!isLoaded || loading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="space-y-8 p-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-32 bg-slate-700 rounded-xl animate-pulse"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-8 p-6">
-      {/* Header with Actions */}
-      <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-2">Fuel Mileage Tracker</h1>
-            <p className="text-teal-100 text-lg">
-              Monitor your vehicle's fuel efficiency and track every kilometer
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              asChild
-              className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
-            >
-              <Link href="/fuel-log/add-entry">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Fuel Entry
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-teal-600 bg-transparent backdrop-blur-sm"
-            >
-              <Link href="/fuel-log/vehicles">Manage Vehicles</Link>
-            </Button>
-          </div>
+      {stats && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Total Spent"
+            value={`৳${stats.totalCost.toLocaleString()}`}
+            description={`${stats.totalFillUps} fill-ups total`}
+            icon={DollarSign}
+            trend={{
+              value: -8.3,
+              label: "vs last month",
+              isPositive: true,
+            }}
+            className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900"
+          />
+          <StatCard
+            title="Average Mileage"
+            value={`${stats.averageMileage > 0 ? stats.averageMileage.toFixed(1) : "N/A"} km/L`}
+            description={`Best: ${stats.bestMileage > 0 ? stats.bestMileage.toFixed(1) : "N/A"} km/L`}
+            icon={Gauge}
+            trend={{
+              value: 5.2,
+              label: "vs last month",
+              isPositive: true,
+            }}
+            className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900"
+          />
+          <StatCard
+            title="Avg Price/L"
+            value={`৳${stats.averagePrice.toFixed(2)}`}
+            description={`${stats.totalVolume.toFixed(1)}L total volume`}
+            icon={Fuel}
+            className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900"
+          />
+          <StatCard
+            title="Cost per KM"
+            value={`৳${stats.costPerKm > 0 ? stats.costPerKm.toFixed(2) : "N/A"}`}
+            description={`${stats.totalDistance.toLocaleString()} KM total`}
+            icon={BarChart3}
+            className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900"
+          />
         </div>
-      </div>
+      )}
 
-      {/* Mileage-focused Stats */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Average Mileage"
-          value={`${stats.averageMileage} km/L`}
-          description="Overall fuel efficiency"
-          icon={Gauge}
-          trend={{
-            value: 5.2,
-            label: "vs last month",
-            isPositive: true,
-          }}
-          className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900"
-        />
-        <StatCard
-          title="Best Mileage"
-          value={`${stats.bestMileage} km/L`}
-          description="Your most efficient vehicle"
-          icon={TrendingUp}
-          className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900"
-        />
-        <StatCard
-          title="Total Distance"
-          value={`${stats.totalDistance.toLocaleString()} KM`}
-          description="Distance covered this month"
-          icon={BarChart3}
-          className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900"
-        />
-        <StatCard
-          title="Fuel Cost"
-          value={`৳${stats.totalFuelCost.toLocaleString()}`}
-          description="Total fuel expenses"
-          icon={DollarSign}
-          trend={{
-            value: -8.3,
-            label: "vs last month",
-            isPositive: true,
-          }}
-          className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900"
-        />
-      </div>
-
-      {/* Charts */}
+      {/* Enhanced Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
           <CardHeader>
@@ -230,7 +267,7 @@ export default function FuelLogDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
+              <LineChart data={mileageTrend.filter((d) => d.mileage > 0)}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -257,56 +294,117 @@ export default function FuelLogDashboard() {
         <Card className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-blue-500" />
-              Distance vs Cost
+              <PieChart className="h-5 w-5 text-blue-500" />
+              Spending by Vehicle
             </CardTitle>
-            <CardDescription>
-              Monthly distance covered and fuel costs
-            </CardDescription>
+            <CardDescription>Total fuel costs breakdown</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="month" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
+            <ResponsiveContainer width="100%" height={250}>
+              <RechartsPieChart>
+                <Pie
+                  data={vehicleDistribution}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {vehicleDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
                 <Tooltip
-                  formatter={(value, name) => [
-                    name === "distance"
-                      ? `${Number(value)} KM`
-                      : `৳${Number(value).toLocaleString()}`,
-                    name === "distance" ? "Distance" : "Fuel Cost",
+                  formatter={(value) => [
+                    `৳${Number(value).toLocaleString()}`,
+                    "Amount",
                   ]}
                 />
-                <Bar
-                  yAxisId="left"
-                  dataKey="distance"
-                  fill="#3b82f6"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Line
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="fuelCost"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                />
-              </ComposedChart>
+              </RechartsPieChart>
             </ResponsiveContainer>
+            <div className="mt-4 space-y-2">
+              {vehicleDistribution.map((item, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm font-medium">{item.name}</span>
+                  <span className="text-sm text-muted-foreground ml-auto">
+                    ৳{item.value.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Monthly Cost vs Distance Chart */}
+      <Card className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-blue-500" />
+            Monthly Fuel Costs & Volume
+          </CardTitle>
+          <CardDescription>
+            Track your monthly fuel expenses and consumption patterns
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+              <XAxis dataKey="month" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+              <Tooltip
+                formatter={(value, name) => [
+                  name === "totalVolume"
+                    ? `${Number(value).toFixed(1)} L`
+                    : `৳${Number(value).toLocaleString()}`,
+                  name === "totalVolume" ? "Volume" : "Cost",
+                ]}
+              />
+              <Bar
+                yAxisId="left"
+                dataKey="totalVolume"
+                fill="#3b82f6"
+                radius={[4, 4, 0, 0]}
+                name="totalVolume"
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="fuelCost"
+                stroke="#f59e0b"
+                strokeWidth={2}
+                name="fuelCost"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
       {/* Recent Fuel Entries */}
       <Card className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle>Recent Fuel Entries</CardTitle>
-          <CardDescription>Latest fill-ups and mileage data</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Recent Fuel Entries</CardTitle>
+              <CardDescription>
+                Latest fill-ups and mileage data
+              </CardDescription>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/fuel-log/fuel-entries">View All Entries</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {stats.recentEntries.length === 0 ? (
+            {recentEntries.length === 0 ? (
               <div className="text-center py-8">
                 <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">
@@ -321,20 +419,14 @@ export default function FuelLogDashboard() {
                 </Button>
               </div>
             ) : (
-              stats.recentEntries.map((entry: any) => (
+              recentEntries.map((entry) => (
                 <div
                   key={entry.id}
                   className="flex items-center justify-between p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div
-                      className={`p-2 rounded-full ${entry.type === "fuel" ? "bg-green-100 dark:bg-green-900" : "bg-orange-100 dark:bg-orange-900"}`}
-                    >
-                      {entry.type === "fuel" ? (
-                        <Fuel className="h-4 w-4 text-green-600 dark:text-green-400" />
-                      ) : (
-                        <Wrench className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                      )}
+                    <div className="p-2 rounded-full bg-green-100 dark:bg-green-900">
+                      <Fuel className="h-4 w-4 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
                       <p className="font-medium">{entry.vehicle}</p>
@@ -342,17 +434,28 @@ export default function FuelLogDashboard() {
                         {new Date(entry.date).toLocaleDateString()} •{" "}
                         {entry.details}
                       </p>
+                      {entry.station && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
+                            {entry.station}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="font-medium">
                       ৳{entry.amount.toLocaleString()}
                     </p>
-                    {entry.mileage && (
+                    {entry.mileage > 0 && (
                       <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                        {entry.mileage} km/L
+                        {entry.mileage.toFixed(1)} km/L
                       </p>
                     )}
+                    <p className="text-xs text-muted-foreground">
+                      {entry.odometer.toLocaleString()} KM
+                    </p>
                   </div>
                 </div>
               ))
@@ -361,16 +464,16 @@ export default function FuelLogDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Mileage Calculator */}
+      {/* Enhanced Mileage Tips */}
       <Card className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gauge className="h-5 w-5 text-teal-500" />
-            Quick Mileage Tips
+            Fuel Efficiency Insights
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-3 gap-4 text-sm">
+          <div className="grid md:grid-cols-3 gap-4 text-sm mb-6">
             <div className="p-4 bg-white dark:bg-slate-700 rounded-lg">
               <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">
                 Excellent (20+ km/L)
@@ -396,6 +499,48 @@ export default function FuelLogDashboard() {
               </p>
             </div>
           </div>
+
+          {stats && (
+            <div className="p-4 bg-white/40 dark:bg-slate-700/40 rounded-lg">
+              <h4 className="font-semibold mb-2">Performance Summary</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span className="text-muted-foreground">
+                    Monthly Average:
+                  </span>
+                  <p className="font-medium">
+                    ৳{stats.monthlyAverage.toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">
+                    Cost per Fill-up:
+                  </span>
+                  <p className="font-medium">
+                    ৳
+                    {stats.totalFillUps > 0
+                      ? (stats.totalCost / stats.totalFillUps).toLocaleString()
+                      : "0"}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">
+                    Avg Volume/Fill:
+                  </span>
+                  <p className="font-medium">
+                    {stats.totalFillUps > 0
+                      ? (stats.totalVolume / stats.totalFillUps).toFixed(1)
+                      : "0"}
+                    L
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Total Vehicles:</span>
+                  <p className="font-medium">{vehicles?.length || 0}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

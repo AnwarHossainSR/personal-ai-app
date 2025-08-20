@@ -89,22 +89,11 @@ export function useFuelLogs() {
     setLoading(true);
 
     try {
-      console.log("🚀 Loading fuel logs with filters:", filters);
-
       const result = await getFuelLogsAction({
         vehicleId: filters.vehicle_id,
         startDate: filters.start_date,
         endDate: filters.end_date,
         station: filters.station,
-      });
-
-      console.log("📊 getFuelLogsAction result:", {
-        success: result.success,
-        dataType: typeof result.data,
-        dataLength: Array.isArray(result.data)
-          ? result.data.length
-          : "not array",
-        error: result.error,
       });
 
       if (result.success && result.data) {
@@ -115,8 +104,6 @@ export function useFuelLogs() {
           console.log("⚠️ No fuel logs found");
           setFuelLogs([]);
         } else {
-          console.log("✅ Converting fuel logs, count:", dataArray.length);
-
           // Convert with error handling for each log
           const convertedLogs: FuelLog[] = dataArray
             .map((log: IFuelLog) => {
@@ -128,8 +115,6 @@ export function useFuelLogs() {
               }
             })
             .filter((log): log is FuelLog => log !== null);
-
-          console.log("🎯 Converted logs:", convertedLogs.length);
           setFuelLogs(convertedLogs);
         }
       } else {
@@ -149,14 +134,7 @@ export function useFuelLogs() {
 
   const loadStats = useCallback(async () => {
     try {
-      console.log("📈 Loading fuel log stats...");
       const result: any = await getFuelLogStatsAction({});
-
-      console.log("📈 Stats result:", {
-        success: result.success,
-        data: result.data,
-        error: result.error,
-      });
 
       if (result.success) {
         setStats(result.data);
@@ -171,7 +149,6 @@ export function useFuelLogs() {
   }, []);
 
   useEffect(() => {
-    console.log("🔄 useEffect triggered, filters changed:", filters);
     loadFuelLogs();
     loadStats();
   }, [loadFuelLogs, loadStats]);
@@ -227,10 +204,8 @@ export function useFuelLogs() {
   };
 
   const updateFilters = (newFilters: UseFuelLogsFilters) => {
-    console.log("🎯 Updating filters:", newFilters);
     setFilters((prev) => {
       const updated = { ...prev, ...newFilters };
-      console.log("🎯 New filters state:", updated);
       return updated;
     });
   };

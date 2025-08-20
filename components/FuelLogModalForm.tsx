@@ -112,7 +112,9 @@ export function FuelLogModalForm({
     if (isOpen) {
       setFormData({
         vehicle_id: initialData?.vehicle_id || "",
-        date: initialData?.date || new Date().toISOString().split("T")[0],
+        date: initialData?.date
+          ? new Date(initialData?.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
         odometer: initialData?.odometer || 0,
         volume: initialData?.volume || 0,
         unit_price: initialData?.unit_price || 0,
@@ -384,7 +386,7 @@ export function FuelLogModalForm({
                   className="h-11 bg-white/50 dark:bg-slate-800/50 border-slate-300 dark:border-slate-600"
                   min="0.1"
                   step="0.1"
-                  max="200"
+                  max="50"
                   disabled={isPending}
                   required
                 />

@@ -24,34 +24,18 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertCircle,
-  BarChart3,
   Calendar,
-  DollarSign,
   Download,
   Edit,
   Filter,
   Fuel,
   Gauge,
   MapPin,
-  PieChart,
   Plus,
+  Search,
   Trash2,
-  TrendingUp,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-
-import {
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  Pie,
-  PieChart as RechartsPieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { FuelLog, useFuelLogs } from "@/hooks/use-fuel-logs";
 import { useVehicles } from "@/hooks/use-vehicles";
@@ -68,7 +52,6 @@ export default function FuelLogPage() {
   const {
     fuelLogs,
     loading: logsLoading,
-    stats,
     createFuelLog,
     updateFuelLog,
     deleteFuelLog,
@@ -82,17 +65,7 @@ export default function FuelLogPage() {
 
   const loading = vehiclesLoading || logsLoading;
 
-  // Debug logging
-  console.log("🔍 Component render:", {
-    vehiclesLength: vehicles?.length,
-    fuelLogsLength: fuelLogs?.length,
-    loading,
-    selectedVehicle,
-    dateRange,
-  });
-
   const handleVehicleChange = (vehicleId: string) => {
-    console.log("🚗 Vehicle changed:", vehicleId);
     setSelectedVehicle(vehicleId);
     updateFilters({
       vehicle_id: vehicleId === "all" ? undefined : vehicleId,
@@ -100,7 +73,6 @@ export default function FuelLogPage() {
   };
 
   const handleDateRangeChange = (range: string) => {
-    console.log("📅 Date range changed:", range);
     setDateRange(range);
     let startDate: string | undefined;
 
@@ -188,8 +160,6 @@ export default function FuelLogPage() {
 
   // Memoized calculations for better performance
   const { filteredLogs, chartData, vehicleDistribution } = useMemo(() => {
-    console.log("🔄 Recalculating memoized data...");
-
     if (!fuelLogs || !Array.isArray(fuelLogs)) {
       console.log("⚠️ fuelLogs is not a valid array:", fuelLogs);
       return {
@@ -203,9 +173,7 @@ export default function FuelLogPage() {
       (log) => selectedVehicle === "all" || log.vehicle_id === selectedVehicle
     );
 
-    console.log("📊 Filtered logs:", filtered.length);
-
-    // Prepare chart data with mileage calculation
+    // Prepare chart data with mileage calculation for trend visualization
     const chartDataCalc = filtered
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .map((log, index, array) => {
@@ -240,9 +208,10 @@ export default function FuelLogPage() {
         };
       });
 
+    // Basic vehicle distribution for quick reference
     const vehicleDistCalc = vehicles
       .map((vehicle) => {
-        const vehicleLogs = fuelLogs.filter(
+        const vehicleLogs = filtered.filter(
           (log) => log.vehicle_id === vehicle.id
         );
         const totalCost = vehicleLogs.reduce(
@@ -252,6 +221,7 @@ export default function FuelLogPage() {
         return {
           name: vehicle.name,
           value: totalCost,
+          count: vehicleLogs.length,
           color: `hsl(${Math.abs(vehicle?.id?.charCodeAt(0) * 123) % 360}, 70%, 50%)`,
         };
       })
@@ -270,29 +240,13 @@ export default function FuelLogPage() {
         <div className="container mx-auto max-w-7xl">
           <div className="space-y-8 p-4 sm:p-6">
             {/* Header Skeleton */}
-            <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 sm:p-8">
+            <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-6 sm:p-8">
               <Skeleton className="h-10 w-64 mb-2 bg-white/20" />
               <Skeleton className="h-6 w-96 bg-white/10" />
             </div>
 
-            {/* Stats Skeleton */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <Skeleton className="h-20 w-full" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
             {/* Content Skeleton */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              <Card>
-                <CardContent className="p-6">
-                  <Skeleton className="h-64 w-full" />
-                </CardContent>
-              </Card>
+            <div className="grid gap-6">
               <Card>
                 <CardContent className="p-6">
                   <Skeleton className="h-64 w-full" />
@@ -345,14 +299,14 @@ export default function FuelLogPage() {
           )}
 
           {/* Header */}
-          <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-whit">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2">
                   Fuel Entries
                 </h1>
-                <p className="text-teal-100 text-base sm:text-lg">
-                  Detailed view of all your fuel consumption records
+                <p className="text-white text-base sm:text-lg">
+                  Manage and analyze all your fuel consumption records
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -376,263 +330,98 @@ export default function FuelLogPage() {
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Filter className="h-5 w-5 text-slate-500" />
-                  <Select
-                    value={selectedVehicle}
-                    onValueChange={handleVehicleChange}
-                  >
-                    <SelectTrigger className="w-48 border-0 bg-transparent">
-                      <SelectValue placeholder="Select vehicle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Vehicles</SelectItem>
-                      {vehicles &&
-                        vehicles?.map((vehicle: IVehicle) => (
-                          <SelectItem key={vehicle.id} value={vehicle.id}>
-                            {vehicle.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-slate-500" />
-                  <Select
-                    value={dateRange}
-                    onValueChange={handleDateRangeChange}
-                  >
-                    <SelectTrigger className="w-48 border-0 bg-transparent">
-                      <SelectValue placeholder="Date range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Time</SelectItem>
-                      <SelectItem value="30">Last 30 Days</SelectItem>
-                      <SelectItem value="90">Last 3 Months</SelectItem>
-                      <SelectItem value="365">Last Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Statistics Cards */}
-          {stats && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/50 backdrop-blur-sm border-red-200/50 dark:border-red-700/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-red-700 dark:text-red-300">
-                        Total Spent
-                      </p>
-                      <p className="text-2xl font-bold text-red-900 dark:text-red-100">
-                        ৳{stats.totalCost.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-red-200/50 dark:bg-red-800/30 rounded-full">
-                      <DollarSign className="h-6 w-6 text-red-600 dark:text-red-400" />
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm">
-                    <span className="text-red-600 dark:text-red-400">
-                      {stats.totalFillUps} fill-ups
-                    </span>
+          {/* Filters and Quick Summary */}
+          <div className="grid gap-4 lg:grid-cols-3">
+            {/* Filters */}
+            <div className="lg:col-span-2 flex flex-col sm:flex-row gap-4">
+              <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Filter className="h-5 w-5 text-slate-500" />
+                    <Select
+                      value={selectedVehicle}
+                      onValueChange={handleVehicleChange}
+                    >
+                      <SelectTrigger className="w-48 border-0 bg-transparent">
+                        <SelectValue placeholder="Select vehicle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Vehicles</SelectItem>
+                        {vehicles &&
+                          vehicles?.map((vehicle: IVehicle) => (
+                            <SelectItem key={vehicle.id} value={vehicle.id}>
+                              {vehicle.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 backdrop-blur-sm border-green-200/50 dark:border-green-700/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                        Avg Mileage
-                      </p>
-                      <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                        {stats.averageMileage > 0
-                          ? stats.averageMileage.toFixed(1)
-                          : "N/A"}{" "}
-                        km/L
-                      </p>
-                    </div>
-                    <div className="p-3 bg-green-200/50 dark:bg-green-800/30 rounded-full">
-                      <Gauge className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm">
-                    <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-                    <span className="text-green-600 dark:text-green-400">
-                      {stats.bestMileage > 0
-                        ? `Best: ${stats.bestMileage.toFixed(1)} km/L`
-                        : "No data"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 backdrop-blur-sm border-blue-200/50 dark:border-blue-700/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                        Avg Price/L
-                      </p>
-                      <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                        ৳{stats.averagePrice.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-blue-200/50 dark:bg-blue-800/30 rounded-full">
-                      <Fuel className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm">
-                    <span className="text-blue-600 dark:text-blue-400">
-                      {stats.totalVolume.toFixed(1)}L total
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/50 dark:to-orange-900/50 backdrop-blur-sm border-orange-200/50 dark:border-orange-700/50">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-orange-700 dark:text-orange-300">
-                        Cost per KM
-                      </p>
-                      <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">
-                        ৳
-                        {stats.costPerKm > 0
-                          ? stats.costPerKm.toFixed(2)
-                          : "N/A"}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-orange-200/50 dark:bg-orange-800/30 rounded-full">
-                      <BarChart3 className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm">
-                    <span className="text-orange-600 dark:text-orange-400">
-                      {stats.totalDistance.toLocaleString()} KM
-                    </span>
+              <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-slate-500" />
+                    <Select
+                      value={dateRange}
+                      onValueChange={handleDateRangeChange}
+                    >
+                      <SelectTrigger className="w-48 border-0 bg-transparent">
+                        <SelectValue placeholder="Date range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Time</SelectItem>
+                        <SelectItem value="30">Last 30 Days</SelectItem>
+                        <SelectItem value="90">Last 3 Months</SelectItem>
+                        <SelectItem value="365">Last Year</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardContent>
               </Card>
             </div>
-          )}
 
-          {/* Charts */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Fuel Efficiency Trend
-                </CardTitle>
-                <CardDescription>Mileage (km/L) over time</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData.filter((d) => d.mileage > 0)}>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        className="opacity-30"
-                      />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip
-                        formatter={(value: number) => [
-                          `${value.toFixed(1)} km/L`,
-                          "Mileage",
-                        ]}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="mileage"
-                        stroke="#10b981"
-                        strokeWidth={3}
-                        dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5" />
-                  Spending by Vehicle
-                </CardTitle>
-                <CardDescription>Total fuel costs breakdown</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie
-                        data={vehicleDistribution}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {vehicleDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value: number) => [
-                          `৳${value.toLocaleString()}`,
-                          "Amount",
-                        ]}
-                      />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {vehicleDistribution.map((item, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-sm font-medium">{item.name}</span>
-                      <span className="text-sm text-muted-foreground ml-auto">
-                        ৳{item.value.toLocaleString()}
-                      </span>
-                    </div>
-                  ))}
+            {/* Quick Summary */}
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200/50 dark:border-blue-700/50">
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-1">
+                    Filtered Results
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {filteredLogs.length}
+                  </p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    entries found
+                  </p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Fuel Logs Table */}
+          {/* Fuel Logs List - Main Focus */}
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Fuel className="h-5 w-5" />
-                All Fuel Entries
-              </CardTitle>
-              <CardDescription>
-                Complete history of your fuel fill-ups and efficiency data
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Fuel className="h-5 w-5" />
+                    Fuel Entries
+                  </CardTitle>
+                  <CardDescription>
+                    {selectedVehicle !== "all" || dateRange !== "all"
+                      ? `Showing ${filteredLogs.length} entries with current filters`
+                      : `All ${filteredLogs.length} fuel entries`}
+                  </CardDescription>
+                </div>
+                {filteredLogs.length > 0 && (
+                  <div className="text-sm text-muted-foreground">
+                    <Search className="h-4 w-4 inline mr-1" />
+                    Use filters to narrow down results
+                  </div>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               {filteredLogs.length === 0 ? (
@@ -644,7 +433,7 @@ export default function FuelLogPage() {
                   <p className="text-muted-foreground mb-6">
                     {selectedVehicle !== "all" || dateRange !== "all"
                       ? "Try adjusting your filters to see more entries"
-                      : "Add your first fuel entry to start tracking mileage"}
+                      : "Add your first fuel entry to start tracking"}
                   </p>
                   <Button onClick={addModal.openModal}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -834,7 +623,7 @@ export default function FuelLogPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Filtered Entries
+                          Entries
                         </p>
                         <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
                           {filteredLogs.length}
@@ -853,12 +642,13 @@ export default function FuelLogPage() {
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Distance Range
+                          Odometer Range
                         </p>
                         <p className="text-lg font-bold text-green-600 dark:text-green-400">
                           {filteredLogs.length > 0
-                            ? `${Math.min(...filteredLogs.map((l) => l.odometer)).toLocaleString()} - ${Math.max(...filteredLogs.map((l) => l.odometer)).toLocaleString()} KM`
-                            : "0 KM"}
+                            ? `${Math.min(...filteredLogs.map((l) => l.odometer)).toLocaleString()} - ${Math.max(...filteredLogs.map((l) => l.odometer)).toLocaleString()}`
+                            : "0"}{" "}
+                          KM
                         </p>
                       </div>
                       <div>
@@ -879,104 +669,116 @@ export default function FuelLogPage() {
             </CardContent>
           </Card>
 
-          {/* Quick Actions Card */}
-          <Card className="bg-gradient-to-br from-teal-50 to-blue-50 dark:from-teal-950/30 dark:to-blue-950/30 border-teal-200/50 dark:border-teal-700/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-300">
-                <Gauge className="h-5 w-5" />
-                Fuel Efficiency Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
-                <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
-                  <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">
-                    Best Performers (20+ km/L)
-                  </h4>
-                  <p className="text-muted-foreground">
-                    {chartData.filter((entry) => entry.mileage >= 20).length}{" "}
-                    entries with excellent mileage
-                  </p>
+          {/* Performance Insights - Simplified */}
+          {filteredLogs.length > 0 && (
+            <Card className="bg-gradient-to-br from-teal-50 to-blue-50 dark:from-teal-950/30 dark:to-blue-950/30 border-teal-200/50 dark:border-teal-700/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-teal-700 dark:text-teal-300">
+                  <Gauge className="h-5 w-5" />
+                  Performance Insights
+                </CardTitle>
+                <CardDescription>
+                  Analysis of your filtered fuel entries
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                    <h4 className="font-semibold mb-2 text-green-600 dark:text-green-400">
+                      Excellent Efficiency (40+ km/L)
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {chartData.filter((entry) => entry.mileage >= 40).length}{" "}
+                      entries with top performance
+                    </p>
+                  </div>
+                  <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                    <h4 className="font-semibold mb-2 text-yellow-600 dark:text-yellow-400">
+                      Good Range (33-40 km/L)
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {
+                        chartData.filter(
+                          (entry) => entry.mileage >= 33 && entry.mileage < 40
+                        ).length
+                      }{" "}
+                      entries with good efficiency
+                    </p>
+                  </div>
+                  <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
+                    <h4 className="font-semibold mb-2 text-red-600 dark:text-red-400">
+                      Needs Review (&lt;15 km/L)
+                    </h4>
+                    <p className="text-muted-foreground">
+                      {
+                        chartData.filter(
+                          (entry) => entry.mileage > 0 && entry.mileage < 33
+                        ).length
+                      }{" "}
+                      entries need attention
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
-                  <h4 className="font-semibold mb-2 text-yellow-600 dark:text-yellow-400">
-                    Average Range (15-20 km/L)
-                  </h4>
-                  <p className="text-muted-foreground">
-                    {
-                      chartData.filter(
-                        (entry) => entry.mileage >= 15 && entry.mileage < 20
-                      ).length
-                    }{" "}
-                    entries with good mileage
-                  </p>
-                </div>
-                <div className="p-4 bg-white/60 dark:bg-slate-800/60 rounded-lg">
-                  <h4 className="font-semibold mb-2 text-red-600 dark:text-red-400">
-                    Needs Attention (&lt;15 km/L)
-                  </h4>
-                  <p className="text-muted-foreground">
-                    {
-                      chartData.filter(
-                        (entry) => entry.mileage > 0 && entry.mileage < 15
-                      ).length
-                    }{" "}
-                    entries need review
-                  </p>
-                </div>
-              </div>
 
-              {stats && (
                 <div className="mt-4 p-4 bg-white/40 dark:bg-slate-700/40 rounded-lg">
-                  <h4 className="font-semibold mb-2">Quick Stats Summary</h4>
+                  <h4 className="font-semibold mb-2">Current Filter Summary</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                     <div>
-                      <span className="text-muted-foreground">
-                        Monthly Average:
-                      </span>
+                      <span className="text-muted-foreground">Date Range:</span>
                       <p className="font-medium">
-                        ৳{stats.monthlyAverage.toLocaleString()}
+                        {dateRange === "all"
+                          ? "All Time"
+                          : `Last ${dateRange} days`}
                       </p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Cost per Fill-up:
+                        Vehicle Filter:
                       </span>
                       <p className="font-medium">
-                        ৳
-                        {stats.totalFillUps > 0
+                        {selectedVehicle === "all"
+                          ? "All Vehicles"
+                          : vehicles.find((v) => v.id === selectedVehicle)
+                              ?.name || "Unknown"}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">
+                        Avg Volume/Entry:
+                      </span>
+                      <p className="font-medium">
+                        {filteredLogs.length > 0
                           ? (
-                              stats.totalCost / stats.totalFillUps
-                            ).toLocaleString()
-                          : "0"}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">
-                        Avg Volume/Fill:
-                      </span>
-                      <p className="font-medium">
-                        {stats.totalFillUps > 0
-                          ? (stats.totalVolume / stats.totalFillUps).toFixed(1)
+                              filteredLogs.reduce(
+                                (sum, log) => sum + log.volume,
+                                0
+                              ) / filteredLogs.length
+                            ).toFixed(1)
                           : "0"}
                         L
                       </p>
                     </div>
                     <div>
                       <span className="text-muted-foreground">
-                        Efficiency Range:
+                        Avg Cost/Entry:
                       </span>
                       <p className="font-medium">
-                        {stats.worstMileage > 0 && stats.bestMileage > 0
-                          ? `${stats.worstMileage.toFixed(1)} - ${stats.bestMileage.toFixed(1)} km/L`
-                          : "No data"}
+                        ৳
+                        {filteredLogs.length > 0
+                          ? (
+                              filteredLogs.reduce(
+                                (sum, log) => sum + log.total_cost,
+                                0
+                              ) / filteredLogs.length
+                            ).toLocaleString()
+                          : "0"}
                       </p>
                     </div>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
