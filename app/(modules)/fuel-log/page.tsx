@@ -398,7 +398,7 @@ export default function FuelLogDashboard() {
               </CardDescription>
             </div>
             <Button asChild variant="outline">
-              <Link href="/fuel-log/entries">View All Entries</Link>
+              <Link href="/fuel-log/fuel-entries">View All Entries</Link>
             </Button>
           </div>
         </CardHeader>
