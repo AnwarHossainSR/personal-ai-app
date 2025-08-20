@@ -115,7 +115,7 @@ export default function FuelLogPage() {
       type: "danger",
       destructive: true,
       onConfirm: async () => {
-        await deleteFuelLog(log._id);
+        await deleteFuelLog(log.id);
       },
     });
   };
@@ -609,7 +609,7 @@ export default function FuelLogPage() {
 
                       return (
                         <div
-                          key={log._id}
+                          key={log.id}
                           className="p-4 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all duration-200 group"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -897,7 +897,7 @@ export default function FuelLogPage() {
         isOpen={addModal.isOpen}
         onClose={addModal.closeModal}
         vehicles={vehicles}
-        onSubmit={async (data) => {
+        onCreateSubmit={async (data) => {
           await createFuelLog(data);
           addModal.closeModal();
         }}
@@ -926,9 +926,13 @@ export default function FuelLogPage() {
             : undefined
         }
         isEditing={true}
-        onSubmit={async (data) => {
-          if (!selectedLog) return;
-          await updateFuelLog(selectedLog._id, data);
+        onUpdateSubmit={async (data, logId) => {
+          const updateData = {
+            id: logId,
+            ...data,
+          };
+
+          await updateFuelLog(updateData);
           editModal.closeModal();
           setSelectedLog(null);
         }}
