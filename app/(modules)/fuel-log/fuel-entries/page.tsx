@@ -66,7 +66,6 @@ export default function FuelLogPage() {
   const loading = vehiclesLoading || logsLoading;
 
   const handleVehicleChange = (vehicleId: string) => {
-    console.log("🚗 Vehicle changed:", vehicleId);
     setSelectedVehicle(vehicleId);
     updateFilters({
       vehicle_id: vehicleId === "all" ? undefined : vehicleId,
@@ -74,7 +73,6 @@ export default function FuelLogPage() {
   };
 
   const handleDateRangeChange = (range: string) => {
-    console.log("📅 Date range changed:", range);
     setDateRange(range);
     let startDate: string | undefined;
 
@@ -162,8 +160,6 @@ export default function FuelLogPage() {
 
   // Memoized calculations for better performance
   const { filteredLogs, chartData, vehicleDistribution } = useMemo(() => {
-    console.log("🔄 Recalculating memoized data...");
-
     if (!fuelLogs || !Array.isArray(fuelLogs)) {
       console.log("⚠️ fuelLogs is not a valid array:", fuelLogs);
       return {

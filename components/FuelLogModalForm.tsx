@@ -112,7 +112,9 @@ export function FuelLogModalForm({
     if (isOpen) {
       setFormData({
         vehicle_id: initialData?.vehicle_id || "",
-        date: initialData?.date || new Date().toISOString().split("T")[0],
+        date: initialData?.date
+          ? new Date(initialData?.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
         odometer: initialData?.odometer || 0,
         volume: initialData?.volume || 0,
         unit_price: initialData?.unit_price || 0,
