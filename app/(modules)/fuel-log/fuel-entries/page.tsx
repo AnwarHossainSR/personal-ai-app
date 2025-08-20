@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  AlertCircle,
   BarChart3,
   Calendar,
   DollarSign,
@@ -37,7 +38,7 @@ import {
   Trash2,
   TrendingUp,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   CartesianGrid,
@@ -55,6 +56,7 @@ import {
 import { FuelLog, useFuelLogs } from "@/hooks/use-fuel-logs";
 import { useVehicles } from "@/hooks/use-vehicles";
 import { IVehicle } from "@/modules/fuel-log/models/vehicle";
+import { toast } from "sonner";
 
 export default function FuelLogPage() {
   const [selectedVehicle, setSelectedVehicle] = useState<string>("all");
@@ -80,7 +82,17 @@ export default function FuelLogPage() {
 
   const loading = vehiclesLoading || logsLoading;
 
+  // Debug logging
+  console.log("🔍 Component render:", {
+    vehiclesLength: vehicles?.length,
+    fuelLogsLength: fuelLogs?.length,
+    loading,
+    selectedVehicle,
+    dateRange,
+  });
+
   const handleVehicleChange = (vehicleId: string) => {
+    console.log("🚗 Vehicle changed:", vehicleId);
     setSelectedVehicle(vehicleId);
     updateFilters({
       vehicle_id: vehicleId === "all" ? undefined : vehicleId,
@@ -88,6 +100,7 @@ export default function FuelLogPage() {
   };
 
   const handleDateRangeChange = (range: string) => {
+    console.log("📅 Date range changed:", range);
     setDateRange(range);
     let startDate: string | undefined;
 
@@ -115,7 +128,7 @@ export default function FuelLogPage() {
       type: "danger",
       destructive: true,
       onConfirm: async () => {
-        await deleteFuelLog(log._id);
+        await deleteFuelLog(log.id);
       },
     });
   };
@@ -126,95 +139,130 @@ export default function FuelLogPage() {
   };
 
   const handleExportData = () => {
-    const csvContent = [
-      [
-        "Date",
-        "Vehicle",
-        "Odometer",
-        "Volume (L)",
-        "Price/L",
-        "Total Cost",
-        "Station",
-        "Notes",
-      ].join(","),
-      ...fuelLogs.map((log) => {
-        const vehicle = vehicles.find((v) => v.id === log.vehicle_id);
-        return [
-          log.date,
-          `"${vehicle?.name || "Unknown"}"`,
-          log.odometer,
-          log.volume,
-          log.unit_price,
-          log.total_cost,
-          `"${log.station || ""}"`,
-          `"${log.notes || ""}"`,
-        ].join(",");
-      }),
-    ].join("\n");
+    if (fuelLogs.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `fuel-logs-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    try {
+      const csvContent = [
+        [
+          "Date",
+          "Vehicle",
+          "Odometer",
+          "Volume (L)",
+          "Price/L",
+          "Total Cost",
+          "Station",
+          "Notes",
+        ].join(","),
+        ...fuelLogs.map((log) => {
+          const vehicle = vehicles.find((v) => v.id === log.vehicle_id);
+          return [
+            log.date,
+            `"${vehicle?.name || "Unknown"}"`,
+            log.odometer,
+            log.volume,
+            log.unit_price,
+            log.total_cost,
+            `"${log.station || ""}"`,
+            `"${log.notes || ""}"`,
+          ].join(",");
+        }),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fuel-logs-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export data");
+    }
   };
 
-  // Prepare chart data with mileage calculation
-  const chartData = fuelLogs
-    ?.filter(
-      (log) => selectedVehicle === "all" || log.vehicle_id === selectedVehicle
-    )
-    ?.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    ?.map((log, index, array) => {
-      const vehicle = vehicles?.find((v: IVehicle) => v.id === log.vehicle_id);
-      let mileage = 0;
+  // Memoized calculations for better performance
+  const { filteredLogs, chartData, vehicleDistribution } = useMemo(() => {
+    console.log("🔄 Recalculating memoized data...");
 
-      // Calculate mileage based on previous entry for same vehicle
-      if (index > 0) {
-        const prevLog = array
-          .slice(0, index)
-          .reverse()
-          .find((prev) => prev.vehicle_id === log.vehicle_id);
-        if (prevLog) {
-          const distance = log.odometer - prevLog.odometer;
-          if (distance > 0 && log.volume > 0) {
-            mileage = distance / log.volume;
+    if (!fuelLogs || !Array.isArray(fuelLogs)) {
+      console.log("⚠️ fuelLogs is not a valid array:", fuelLogs);
+      return {
+        filteredLogs: [],
+        chartData: [],
+        vehicleDistribution: [],
+      };
+    }
+
+    const filtered = fuelLogs.filter(
+      (log) => selectedVehicle === "all" || log.vehicle_id === selectedVehicle
+    );
+
+    console.log("📊 Filtered logs:", filtered.length);
+
+    // Prepare chart data with mileage calculation
+    const chartDataCalc = filtered
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((log, index, array) => {
+        const vehicle = vehicles?.find(
+          (v: IVehicle) => v.id === log.vehicle_id
+        );
+        let mileage = 0;
+
+        // Calculate mileage based on previous entry for same vehicle
+        if (index > 0) {
+          const prevLog = array
+            .slice(0, index)
+            .reverse()
+            .find((prev) => prev.vehicle_id === log.vehicle_id);
+          if (prevLog) {
+            const distance = log.odometer - prevLog.odometer;
+            if (distance > 0 && log.volume > 0) {
+              mileage = distance / log.volume;
+            }
           }
         }
-      }
 
-      return {
-        date: new Date(log.date).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        mileage: mileage,
-        cost: log.total_cost,
-        price: log.unit_price,
-        vehicle: vehicle?.name || "Unknown",
-      };
-    });
+        return {
+          date: new Date(log.date).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+          mileage: mileage,
+          cost: log.total_cost,
+          price: log.unit_price,
+          vehicle: vehicle?.name || "Unknown",
+        };
+      });
 
-  const vehicleDistribution = vehicles
-    .map((vehicle) => {
-      const vehicleLogs = fuelLogs.filter(
-        (log) => log.vehicle_id === vehicle.id
-      );
-      const totalCost = vehicleLogs.reduce(
-        (sum, log) => sum + log.total_cost,
-        0
-      );
-      return {
-        name: vehicle.name,
-        value: totalCost,
-        color: `hsl(${Math.abs(vehicle?.id?.charCodeAt(0) * 123) % 360}, 70%, 50%)`,
-      };
-    })
-    .filter((item) => item.value > 0);
+    const vehicleDistCalc = vehicles
+      .map((vehicle) => {
+        const vehicleLogs = fuelLogs.filter(
+          (log) => log.vehicle_id === vehicle.id
+        );
+        const totalCost = vehicleLogs.reduce(
+          (sum, log) => sum + log.total_cost,
+          0
+        );
+        return {
+          name: vehicle.name,
+          value: totalCost,
+          color: `hsl(${Math.abs(vehicle?.id?.charCodeAt(0) * 123) % 360}, 70%, 50%)`,
+        };
+      })
+      .filter((item) => item.value > 0);
+
+    return {
+      filteredLogs: filtered,
+      chartData: chartDataCalc,
+      vehicleDistribution: vehicleDistCalc,
+    };
+  }, [fuelLogs, selectedVehicle, vehicles]);
 
   if (loading) {
     return (
@@ -257,10 +305,45 @@ export default function FuelLogPage() {
     );
   }
 
+  // Debug info card for development
+  const isDebugMode = process.env.NODE_ENV === "development";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto max-w-7xl">
         <div className="space-y-8 p-4 sm:p-6">
+          {/* Debug Info (only in development) */}
+          {isDebugMode && (
+            <Card className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+                  <AlertCircle className="h-5 w-5" />
+                  Debug Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Vehicles:</span>{" "}
+                    {vehicles?.length || 0}
+                  </div>
+                  <div>
+                    <span className="font-medium">Fuel Logs:</span>{" "}
+                    {fuelLogs?.length || 0}
+                  </div>
+                  <div>
+                    <span className="font-medium">Filtered:</span>{" "}
+                    {filteredLogs.length}
+                  </div>
+                  <div>
+                    <span className="font-medium">Loading:</span>{" "}
+                    {loading ? "Yes" : "No"}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Header */}
           <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -552,14 +635,16 @@ export default function FuelLogPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {fuelLogs.length === 0 ? (
+              {filteredLogs.length === 0 ? (
                 <div className="text-center py-12">
                   <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">
                     No fuel entries found
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Add your first fuel entry to start tracking mileage
+                    {selectedVehicle !== "all" || dateRange !== "all"
+                      ? "Try adjusting your filters to see more entries"
+                      : "Add your first fuel entry to start tracking mileage"}
                   </p>
                   <Button onClick={addModal.openModal}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -568,12 +653,7 @@ export default function FuelLogPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {fuelLogs
-                    .filter(
-                      (log) =>
-                        selectedVehicle === "all" ||
-                        log.vehicle_id === selectedVehicle
-                    )
+                  {filteredLogs
                     .sort(
                       (a, b) =>
                         new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -609,7 +689,7 @@ export default function FuelLogPage() {
 
                       return (
                         <div
-                          key={log._id}
+                          key={log.id}
                           className="p-4 rounded-xl bg-white/40 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700/50 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all duration-200 group"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -754,10 +834,10 @@ export default function FuelLogPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Total Entries
+                          Filtered Entries
                         </p>
                         <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                          {fuelLogs.length}
+                          {filteredLogs.length}
                         </p>
                       </div>
                       <div>
@@ -765,15 +845,20 @@ export default function FuelLogPage() {
                           Total Volume
                         </p>
                         <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                          {stats?.totalVolume.toFixed(1) || 0}L
+                          {filteredLogs
+                            .reduce((sum, log) => sum + log.volume, 0)
+                            .toFixed(1)}
+                          L
                         </p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground uppercase tracking-wide">
-                          Total Distance
+                          Distance Range
                         </p>
                         <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                          {stats?.totalDistance.toLocaleString() || 0} KM
+                          {filteredLogs.length > 0
+                            ? `${Math.min(...filteredLogs.map((l) => l.odometer)).toLocaleString()} - ${Math.max(...filteredLogs.map((l) => l.odometer)).toLocaleString()} KM`
+                            : "0 KM"}
                         </p>
                       </div>
                       <div>
@@ -781,7 +866,10 @@ export default function FuelLogPage() {
                           Total Cost
                         </p>
                         <p className="text-lg font-bold text-red-600 dark:text-red-400">
-                          ৳{stats?.totalCost.toLocaleString() || 0}
+                          ৳
+                          {filteredLogs
+                            .reduce((sum, log) => sum + log.total_cost, 0)
+                            .toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -897,7 +985,7 @@ export default function FuelLogPage() {
         isOpen={addModal.isOpen}
         onClose={addModal.closeModal}
         vehicles={vehicles}
-        onSubmit={async (data) => {
+        onCreateSubmit={async (data) => {
           await createFuelLog(data);
           addModal.closeModal();
         }}
@@ -926,9 +1014,13 @@ export default function FuelLogPage() {
             : undefined
         }
         isEditing={true}
-        onSubmit={async (data) => {
-          if (!selectedLog) return;
-          await updateFuelLog(selectedLog._id, data);
+        onUpdateSubmit={async (data, logId) => {
+          const updateData = {
+            id: logId,
+            ...data,
+          };
+
+          await updateFuelLog(updateData);
           editModal.closeModal();
           setSelectedLog(null);
         }}

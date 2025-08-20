@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string;
+  title?: string | React.ReactNode;
   description?: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl" | "full";

@@ -1,24 +1,21 @@
-// hooks/use-fuel-logs.ts
-import { toast } from "@/components/ui/use-toast";
-import { apiClient } from "@/lib/api/client";
-import { useCallback, useEffect, useState } from "react";
+"use client";
+
+import {
+  createFuelLogAction,
+  deleteFuelLogAction,
+  getFuelLogsAction,
+  getFuelLogStatsAction,
+  updateFuelLogAction,
+  type CreateFuelLogInput,
+  type UpdateFuelLogInput,
+} from "@/modules/fuel-log/actions/fuel-log-actions";
+import type { IFuelLog } from "@/modules/fuel-log/models/fuel-log";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 export interface FuelLog {
-  _id: string;
-  vehicle_id: string;
+  id: string;
   user_id: string;
-  date: string;
-  odometer: number;
-  volume: number;
-  unit_price: number;
-  total_cost: number;
-  station?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface FuelLogInput {
   vehicle_id: string;
   date: string;
   odometer: number;
@@ -27,239 +24,230 @@ export interface FuelLogInput {
   total_cost: number;
   station?: string;
   notes?: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface FuelLogFilters {
+export interface FuelLogStats {
+  totalCost: number;
+  totalVolume: number;
+  totalFillUps: number;
+  totalDistance: number;
+  averageMileage: number;
+  averagePrice: number;
+  costPerKm: number;
+  monthlyAverage: number;
+  bestMileage: number;
+  worstMileage: number;
+}
+
+interface UseFuelLogsFilters {
   vehicle_id?: string;
   start_date?: string;
   end_date?: string;
   station?: string;
 }
 
-export interface FuelStats {
-  totalCost: number;
-  totalVolume: number;
-  averagePrice: number;
-  averageMileage: number;
-  totalDistance: number;
-  totalFillUps: number;
-  bestMileage: number;
-  worstMileage: number;
-  costPerKm: number;
-  monthlyAverage: number;
-}
-
-export function useFuelLogs(initialFilters?: FuelLogFilters) {
+export function useFuelLogs() {
   const [fuelLogs, setFuelLogs] = useState<FuelLog[]>([]);
+  const [stats, setStats] = useState<FuelLogStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<FuelLogFilters>(initialFilters || {});
+  const [filters, setFilters] = useState<UseFuelLogsFilters>({});
 
-  const fetchFuelLogs = useCallback(async () => {
+  // Use ref to prevent race conditions
+  const loadingRef = useRef(false);
+
+  const convertIFuelLogToFuelLog = (log: IFuelLog): FuelLog => ({
+    id: log.id,
+    user_id: log.user_id,
+    vehicle_id: log.vehicle_id,
+    date:
+      log.date instanceof Date
+        ? log.date.toISOString().split("T")[0]
+        : String(log.date),
+    odometer: Number(log.odometer) || 0,
+    volume: Number(log.volume) || 0,
+    unit_price: Number(log.unit_price) || 0,
+    total_cost: Number(log.total_cost) || 0,
+    station: log.station || undefined,
+    notes: log.notes || undefined,
+    created_at:
+      log.created_at instanceof Date
+        ? log.created_at.toISOString()
+        : String(log.created_at),
+    updated_at:
+      log.updated_at instanceof Date
+        ? log.updated_at.toISOString()
+        : String(log.updated_at),
+  });
+
+  const loadFuelLogs = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (loadingRef.current) return;
+
+    loadingRef.current = true;
+    setLoading(true);
+
     try {
-      setLoading(true);
-      setError(null);
+      console.log("🚀 Loading fuel logs with filters:", filters);
 
-      const queryParams = new URLSearchParams();
-      if (filters.vehicle_id)
-        queryParams.append("vehicle_id", filters.vehicle_id);
-      if (filters.start_date)
-        queryParams.append("start_date", filters.start_date);
-      if (filters.end_date) queryParams.append("end_date", filters.end_date);
-      if (filters.station) queryParams.append("station", filters.station);
-
-      const response = await apiClient.get<{ data: FuelLog[] }>(
-        `/fuel-logs?${queryParams.toString()}`
-      );
-
-      setFuelLogs(response.data);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch fuel logs";
-      setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
+      const result = await getFuelLogsAction({
+        vehicleId: filters.vehicle_id,
+        startDate: filters.start_date,
+        endDate: filters.end_date,
+        station: filters.station,
       });
+
+      console.log("📊 getFuelLogsAction result:", {
+        success: result.success,
+        dataType: typeof result.data,
+        dataLength: Array.isArray(result.data)
+          ? result.data.length
+          : "not array",
+        error: result.error,
+      });
+
+      if (result.success && result.data) {
+        // Ensure result.data is an array
+        const dataArray = Array.isArray(result.data) ? result.data : [];
+
+        if (dataArray.length === 0) {
+          console.log("⚠️ No fuel logs found");
+          setFuelLogs([]);
+        } else {
+          console.log("✅ Converting fuel logs, count:", dataArray.length);
+
+          // Convert with error handling for each log
+          const convertedLogs: FuelLog[] = dataArray
+            .map((log: IFuelLog) => {
+              try {
+                return convertIFuelLogToFuelLog(log);
+              } catch (error) {
+                console.error("❌ Error converting fuel log:", log, error);
+                return null;
+              }
+            })
+            .filter((log): log is FuelLog => log !== null);
+
+          console.log("🎯 Converted logs:", convertedLogs.length);
+          setFuelLogs(convertedLogs);
+        }
+      } else {
+        console.error("❌ Failed to load fuel logs:", result.error);
+        toast.error(result.error || "Failed to load fuel logs");
+        setFuelLogs([]);
+      }
+    } catch (error) {
+      console.error("💥 Exception loading fuel logs:", error);
+      toast.error("Failed to load fuel logs");
+      setFuelLogs([]);
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, [filters]);
 
-  useEffect(() => {
-    fetchFuelLogs();
-  }, [fetchFuelLogs]);
-
-  const createFuelLog = useCallback(async (data: FuelLogInput) => {
+  const loadStats = useCallback(async () => {
     try {
-      const response = await apiClient.post<{ data: FuelLog }>(
-        "/fuel-logs",
-        data
-      );
-      setFuelLogs((prev) => [response.data, ...prev]);
-      toast({
-        title: "Success",
-        description: "Fuel log created successfully",
+      console.log("📈 Loading fuel log stats...");
+      const result: any = await getFuelLogStatsAction({});
+
+      console.log("📈 Stats result:", {
+        success: result.success,
+        data: result.data,
+        error: result.error,
       });
-      return response.data;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to create fuel log";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      throw err;
-    }
-  }, []);
 
-  const updateFuelLog = useCallback(async (id: string, data: FuelLogInput) => {
-    try {
-      const response = await apiClient.put<{ data: FuelLog }>(
-        `/fuel-logs/${id}`,
-        data
-      );
-      setFuelLogs((prev) =>
-        prev.map((log) => (log._id === id ? response.data : log))
-      );
-      toast({
-        title: "Success",
-        description: "Fuel log updated successfully",
-      });
-      return response.data;
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to update fuel log";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      throw err;
-    }
-  }, []);
-
-  const deleteFuelLog = useCallback(async (id: string) => {
-    try {
-      await apiClient.delete(`/fuel-logs/${id}`);
-      setFuelLogs((prev) => prev.filter((log) => log._id !== id));
-      toast({
-        title: "Success",
-        description: "Fuel log deleted successfully",
-      });
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to delete fuel log";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      throw err;
-    }
-  }, []);
-
-  const calculateStats = useCallback((logs: FuelLog[]): FuelStats => {
-    if (logs.length === 0) {
-      return {
-        totalCost: 0,
-        totalVolume: 0,
-        averagePrice: 0,
-        averageMileage: 0,
-        totalDistance: 0,
-        totalFillUps: 0,
-        bestMileage: 0,
-        worstMileage: 0,
-        costPerKm: 0,
-        monthlyAverage: 0,
-      };
-    }
-
-    const totalCost = logs.reduce((sum, log) => sum + log.total_cost, 0);
-    const totalVolume = logs.reduce((sum, log) => sum + log.volume, 0);
-
-    // Calculate mileage for entries where we can determine distance
-    const sortedLogs = [...logs].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    const mileageEntries: number[] = [];
-    let totalDistance = 0;
-
-    // Group by vehicle to calculate mileage properly
-    const vehicleGroups = logs.reduce(
-      (groups, log) => {
-        if (!groups[log.vehicle_id]) groups[log.vehicle_id] = [];
-        groups[log.vehicle_id].push(log);
-        return groups;
-      },
-      {} as Record<string, FuelLog[]>
-    );
-
-    Object.values(vehicleGroups).forEach((vehicleLogs) => {
-      const sortedVehicleLogs = vehicleLogs.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-
-      for (let i = 1; i < sortedVehicleLogs.length; i++) {
-        const current = sortedVehicleLogs[i];
-        const previous = sortedVehicleLogs[i - 1];
-        const distance = current.odometer - previous.odometer;
-
-        if (distance > 0 && current.volume > 0) {
-          const mileage = distance / current.volume;
-          mileageEntries.push(mileage);
-          totalDistance += distance;
-        }
+      if (result.success) {
+        setStats(result.data);
+      } else {
+        console.error("Stats error:", result.error);
+        setStats(null);
       }
+    } catch (error) {
+      console.error("Error loading stats:", error);
+      setStats(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("🔄 useEffect triggered, filters changed:", filters);
+    loadFuelLogs();
+    loadStats();
+  }, [loadFuelLogs, loadStats]);
+
+  const createFuelLog = async (data: CreateFuelLogInput) => {
+    try {
+      const result = await createFuelLogAction(data);
+      if (result.success) {
+        toast.success("Fuel log created successfully");
+        await Promise.all([loadFuelLogs(), loadStats()]);
+        return result.data;
+      } else {
+        toast.error(result.error || "Failed to create fuel log");
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error creating fuel log:", error);
+      throw error;
+    }
+  };
+
+  const updateFuelLog = async (data: UpdateFuelLogInput) => {
+    try {
+      const result = await updateFuelLogAction(data);
+      if (result.success) {
+        toast.success("Fuel log updated successfully");
+        await Promise.all([loadFuelLogs(), loadStats()]);
+        return result.data;
+      } else {
+        toast.error(result.error || "Failed to update fuel log");
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error updating fuel log:", error);
+      throw error;
+    }
+  };
+
+  const deleteFuelLog = async (id: string) => {
+    try {
+      const result = await deleteFuelLogAction({ id });
+      if (result.success) {
+        toast.success("Fuel log deleted successfully");
+        await Promise.all([loadFuelLogs(), loadStats()]);
+      } else {
+        toast.error(result.error || "Failed to delete fuel log");
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      console.error("Error deleting fuel log:", error);
+      throw error;
+    }
+  };
+
+  const updateFilters = (newFilters: UseFuelLogsFilters) => {
+    console.log("🎯 Updating filters:", newFilters);
+    setFilters((prev) => {
+      const updated = { ...prev, ...newFilters };
+      console.log("🎯 New filters state:", updated);
+      return updated;
     });
+  };
 
-    const averagePrice = totalVolume > 0 ? totalCost / totalVolume : 0;
-    const averageMileage =
-      mileageEntries.length > 0
-        ? mileageEntries.reduce((sum, m) => sum + m, 0) / mileageEntries.length
-        : 0;
-    const bestMileage =
-      mileageEntries.length > 0 ? Math.max(...mileageEntries) : 0;
-    const worstMileage =
-      mileageEntries.length > 0 ? Math.min(...mileageEntries) : 0;
-    const costPerKm = totalDistance > 0 ? totalCost / totalDistance : 0;
-
-    // Calculate monthly average
-    const months = new Set(logs.map((log) => log.date.substring(0, 7))).size;
-    const monthlyAverage = months > 0 ? totalCost / months : 0;
-
-    return {
-      totalCost,
-      totalVolume,
-      averagePrice,
-      averageMileage,
-      totalDistance,
-      totalFillUps: logs.length,
-      bestMileage,
-      worstMileage,
-      costPerKm,
-      monthlyAverage,
-    };
-  }, []);
-
-  const updateFilters = useCallback((newFilters: FuelLogFilters) => {
-    setFilters(newFilters);
-  }, []);
-
-  const stats = calculateStats(fuelLogs);
+  const refreshData = async () => {
+    await Promise.all([loadFuelLogs(), loadStats()]);
+  };
 
   return {
     fuelLogs,
-    loading,
-    error,
-    filters,
     stats,
+    loading,
+    filters,
     createFuelLog,
     updateFuelLog,
     deleteFuelLog,
     updateFilters,
-    refetch: fetchFuelLogs,
+    refreshData,
   };
 }
