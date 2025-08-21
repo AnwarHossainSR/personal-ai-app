@@ -53,9 +53,9 @@ export function Header({ user }: HeaderProps) {
   };
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-background border-b border-border">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold text-foreground">
+    <header className="flex items-center justify-end lg:justify-between md:justify-between px-6 py-4 bg-background border-b border-border">
+      <div className="items-center gap-4 hidden lg:flex md:flex">
+        <h1 className="text-xl font-semibold text-foreground ">
           {getTitle(pathname)}
         </h1>
       </div>

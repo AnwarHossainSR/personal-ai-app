@@ -265,7 +265,7 @@ export default function FuelLogPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto max-w-7xl">
-        <div className="space-y-8 p-4 sm:p-6">
+        <div className="space-y-8 py-4 px-2">
           {/* Debug Info (only in development) */}
           {isDebugMode && (
             <Card className="bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-700">
