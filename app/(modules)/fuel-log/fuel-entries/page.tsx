@@ -299,7 +299,7 @@ export default function FuelLogPage() {
           )}
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-whit">
+          <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-blue-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2">

@@ -12,6 +12,7 @@ export async function getAuthUser(): Promise<ClerkUser | null> {
       userId: withoutPrefix,
       email: user.emailAddresses[0]?.emailAddress || "",
       role: (user.privateMetadata?.role as "user" | "administrator") || "user",
+      imageUrl: user.imageUrl,
     };
   } catch (error) {
     return null;

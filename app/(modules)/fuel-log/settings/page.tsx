@@ -26,7 +26,6 @@ import {
   Download,
   Fuel,
   Globe,
-  MapPin,
   Moon,
   Palette,
   Save,
@@ -35,7 +34,6 @@ import {
   Sun,
   Trash2,
   Upload,
-  User,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -155,7 +153,7 @@ export default function SettingsPage() {
       <div className="container mx-auto max-w-7xl">
         <div className="space-y-8 p-4 sm:p-6">
           {/* Header */}
-          <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-blue-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2 flex items-center gap-3">
@@ -180,91 +178,6 @@ export default function SettingsPage() {
               </Button>
             </div>
           </div>
-
-          {/* Profile Settings */}
-          <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-blue-500" />
-                Profile Information
-              </CardTitle>
-              <CardDescription>
-                Manage your personal information and account details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    value={settings.profile.name}
-                    onChange={(e) =>
-                      updateSettings("profile", "name", e.target.value)
-                    }
-                    placeholder="Your full name"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={settings.profile.email}
-                    onChange={(e) =>
-                      updateSettings("profile", "email", e.target.value)
-                    }
-                    placeholder="your@email.com"
-                  />
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="location"
-                      value={settings.profile.location}
-                      onChange={(e) =>
-                        updateSettings("profile", "location", e.target.value)
-                      }
-                      placeholder="City, State"
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="timezone">Timezone</Label>
-                  <Select
-                    value={settings.profile.timezone}
-                    onValueChange={(value) =>
-                      updateSettings("profile", "timezone", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Asia/Kolkata">
-                        Asia/Kolkata (IST)
-                      </SelectItem>
-                      <SelectItem value="America/New_York">
-                        America/New_York (EST)
-                      </SelectItem>
-                      <SelectItem value="Europe/London">
-                        Europe/London (GMT)
-                      </SelectItem>
-                      <SelectItem value="Asia/Tokyo">
-                        Asia/Tokyo (JST)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* App Preferences */}
           <Card className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">

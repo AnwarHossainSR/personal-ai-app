@@ -259,7 +259,7 @@ export default function VehiclesPage() {
       <div className="container mx-auto max-w-7xl">
         <div className="space-y-8 p-4 sm:p-6">
           {/* Header */}
-          <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-blue-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-2">

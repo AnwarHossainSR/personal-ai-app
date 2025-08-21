@@ -54,13 +54,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 p-6">
-      <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 text-white">
-        <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
-        <p className="text-teal-100 text-lg">
-          Welcome back! Here's an overview of your modules and recent activity.
-        </p>
-      </div>
-
       {/* System Stats for Admins */}
       {userRole === "admin" && systemStats && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
