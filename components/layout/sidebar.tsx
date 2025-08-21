@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { getModulesForRole } from "@/modules/registry";
 import { BarChart3, ChevronDown, ChevronRight, Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -78,8 +79,8 @@ export function Sidebar({ userRole, className }: SidebarProps) {
     <div className="flex flex-col h-full bg-sidebar">
       <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <BarChart3 className="h-5 w-5 text-primary-foreground" />
+          <div className="rounded-lg flex items-center justify-center">
+            <Image src="/logo.svg" alt="FuelApp Logo" width={50} height={50} />
           </div>
           <Link href="/" className="text-xl font-bold text-sidebar-foreground">
             Fuel App

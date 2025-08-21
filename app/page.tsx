@@ -15,6 +15,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -25,8 +26,13 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg">
-                <BarChart3 className="h-6 w-6 text-primary-foreground" />
+              <div className="rounded-lg flex items-center justify-center shadow-lg">
+                <Image
+                  src="/logo.svg"
+                  alt="FuelApp Logo"
+                  width={50}
+                  height={50}
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold font-heading text-foreground">
