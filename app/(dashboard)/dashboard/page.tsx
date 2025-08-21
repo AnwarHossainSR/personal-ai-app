@@ -53,7 +53,7 @@ export default function DashboardPage() {
   const userRole = (user.publicMetadata?.role as string) || "user";
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 py-4 px-2">
       {/* System Stats for Admins */}
       {userRole === "admin" && systemStats && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

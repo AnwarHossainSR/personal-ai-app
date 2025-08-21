@@ -209,7 +209,7 @@ export default function FuelLogDashboard() {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 py-4 px-2">
       {stats && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatCard

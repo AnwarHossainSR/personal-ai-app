@@ -181,7 +181,10 @@ export function Sidebar({ userRole, className }: SidebarProps) {
       <Button
         variant="ghost"
         size="sm"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-card/80 backdrop-blur-sm"
+        className={cn(
+          "lg:hidden fixed top-4 left-4 bg-card/80 backdrop-blur-sm",
+          isOpen && "bg-card/80 backdrop-blur-sm"
+        )}
         onClick={() => setIsOpen(true)}
       >
         <Menu className="h-5 w-5" />

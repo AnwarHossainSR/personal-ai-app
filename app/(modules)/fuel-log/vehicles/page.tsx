@@ -257,7 +257,7 @@ export default function VehiclesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="container mx-auto max-w-7xl">
-        <div className="space-y-8 p-4 sm:p-6">
+        <div className="space-y-8 py-4 px-2">
           {/* Header */}
           <div className="bg-gradient-to-r from-cyan-900 to-cyan-950 rounded-2xl p-8 text-blue-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
