@@ -60,11 +60,6 @@ export const moduleRegistry: ModuleMetadata[] = [
         icon: Wrench,
       },
       {
-        path: "/fuel-log/reports",
-        label: "Reports",
-        icon: BarChart3,
-      },
-      {
         path: "/fuel-log/settings",
         label: "Settings",
         icon: Settings,
