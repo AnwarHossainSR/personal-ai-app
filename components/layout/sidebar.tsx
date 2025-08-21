@@ -81,7 +81,9 @@ export function Sidebar({ userRole, className }: SidebarProps) {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <BarChart3 className="h-5 w-5 text-primary-foreground" />
           </div>
-          <h2 className="text-xl font-bold text-sidebar-foreground">FuelApp</h2>
+          <Link href="/" className="text-xl font-bold text-sidebar-foreground">
+            Fuel App
+          </Link>
         </div>
         <Button
           variant="ghost"

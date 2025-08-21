@@ -1,8 +1,21 @@
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
-import { BarChart3, Shield, Zap, TrendingUp, Users, Settings } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import {
+  BarChart3,
+  Settings,
+  Shield,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -16,8 +29,12 @@ export default function HomePage() {
                 <BarChart3 className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold font-heading text-foreground">FuelApp</h1>
-                <p className="text-xs text-muted-foreground">Professional Fleet Management</p>
+                <h1 className="text-xl font-bold font-heading text-foreground">
+                  FuelApp
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Professional Fleet Management
+                </p>
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-6">
@@ -44,7 +61,11 @@ export default function HomePage() {
               </SignedIn>
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button variant="outline" size="sm" className="border-border hover:bg-accent bg-transparent">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-border hover:bg-accent bg-transparent"
+                  >
                     Sign In
                   </Button>
                 </SignInButton>
@@ -68,29 +89,44 @@ export default function HomePage() {
               <span className="text-primary block">Management System</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Streamline your fleet operations with our comprehensive fuel tracking, vehicle management, and analytics
-              platform designed for modern businesses.
+              Streamline your fleet operations with our comprehensive fuel
+              tracking, vehicle management, and analytics platform designed for
+              modern businesses.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <SignedOut>
                 <SignInButton mode="modal">
-                  <Button size="lg" className="px-8 py-3 text-base font-semibold">
+                  <Button
+                    size="lg"
+                    className="px-8 py-3 text-base font-semibold"
+                  >
                     Start Free Trial
                   </Button>
                 </SignInButton>
-                <Button variant="outline" size="lg" className="px-8 py-3 text-base font-semibold bg-transparent">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="px-8 py-3 text-base font-semibold bg-transparent"
+                >
                   View Demo
                 </Button>
               </SignedOut>
               <SignedIn>
                 <Link href="/dashboard">
-                  <Button size="lg" className="px-8 py-3 text-base font-semibold">
+                  <Button
+                    size="lg"
+                    className="px-8 py-3 text-base font-semibold"
+                  >
                     Go to Dashboard
                   </Button>
                 </Link>
                 <Link href="/fuel-log">
-                  <Button variant="outline" size="lg" className="px-8 py-3 text-base font-semibold bg-transparent">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="px-8 py-3 text-base font-semibold bg-transparent"
+                  >
                     Manage Fleet
                   </Button>
                 </Link>
@@ -124,7 +160,8 @@ export default function HomePage() {
               Comprehensive Fleet Management Modules
             </h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Modular architecture allows you to use only what you need, when you need it
+              Modular architecture allows you to use only what you need, when
+              you need it
             </p>
           </div>
 
@@ -134,9 +171,12 @@ export default function HomePage() {
                 <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
                   <Zap className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-xl font-heading text-foreground">Fuel Management</CardTitle>
+                <CardTitle className="text-xl font-heading text-foreground">
+                  Fuel Management
+                </CardTitle>
                 <CardDescription className="text-base text-muted-foreground">
-                  Comprehensive fuel tracking with real-time monitoring and cost optimization
+                  Comprehensive fuel tracking with real-time monitoring and cost
+                  optimization
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -162,9 +202,12 @@ export default function HomePage() {
                 <div className="w-12 h-12 bg-secondary/20 rounded-lg flex items-center justify-center mb-4">
                   <Settings className="h-6 w-6 text-secondary" />
                 </div>
-                <CardTitle className="text-xl font-heading text-foreground">Vehicle Operations</CardTitle>
+                <CardTitle className="text-xl font-heading text-foreground">
+                  Vehicle Operations
+                </CardTitle>
                 <CardDescription className="text-base text-muted-foreground">
-                  Complete vehicle lifecycle management with predictive maintenance
+                  Complete vehicle lifecycle management with predictive
+                  maintenance
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -190,9 +233,12 @@ export default function HomePage() {
                 <div className="w-12 h-12 bg-chart-3/20 rounded-lg flex items-center justify-center mb-4">
                   <BarChart3 className="h-6 w-6 text-chart-3" />
                 </div>
-                <CardTitle className="text-xl font-heading text-foreground">Advanced Analytics</CardTitle>
+                <CardTitle className="text-xl font-heading text-foreground">
+                  Advanced Analytics
+                </CardTitle>
                 <CardDescription className="text-base text-muted-foreground">
-                  Data-driven insights with customizable reporting and dashboards
+                  Data-driven insights with customizable reporting and
+                  dashboards
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -225,16 +271,23 @@ export default function HomePage() {
                 Ready to Transform Your Fleet Operations?
               </h3>
               <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join industry leaders who trust FuelApp to optimize their fleet management and reduce operational costs
-                by up to 30%.
+                Join industry leaders who trust FuelApp to optimize their fleet
+                management and reduce operational costs by up to 30%.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <SignInButton mode="modal">
-                  <Button size="lg" className="px-8 py-3 text-base font-semibold">
+                  <Button
+                    size="lg"
+                    className="px-8 py-3 text-base font-semibold"
+                  >
                     Start Free Trial
                   </Button>
                 </SignInButton>
-                <Button variant="outline" size="lg" className="px-8 py-3 text-base font-semibold bg-transparent">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="px-8 py-3 text-base font-semibold bg-transparent"
+                >
                   Schedule Demo
                 </Button>
               </div>
@@ -250,11 +303,15 @@ export default function HomePage() {
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <BarChart3 className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold font-heading text-foreground">FuelApp</span>
+            <span className="text-lg font-bold font-heading text-foreground">
+              FuelApp
+            </span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2024 FuelApp. Professional Fleet Management Platform.</p>
+          <p className="text-sm text-muted-foreground">
+            © 2024 FuelApp. Professional Fleet Management Platform.
+          </p>
         </div>
       </footer>
     </div>
-  )
+  );
 }
